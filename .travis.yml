@@ -1,0 +1,15 @@
+language: cpp
+
+compiler:
+- gcc
+
+env:
+  global:
+    - ACE_ROOT=$TRAVIS_BUILD_DIR/ACE_TAO/ACE
+    - MPC_ROOT=$TRAVIS_BUILD_DIR/MPC
+    - TAO_ROOT=$TRAVIS_BUILD_DIR/ACE_TAO/TAO
+    - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ACE_ROOT/lib
+
+before_install:
+  - git clone --depth 1 git://github.com/DOCGroup/MPC.git
+  - git clone -b Latest_Micro --depth 1 git://github.com/DOCGroup/ACE_TAO.git
