@@ -1,15 +1,45 @@
+sudo: false
+
 language: cpp
 
+os:
+  - linux
+
 compiler:
-- gcc
+  - gcc
 
 env:
   global:
-    - ACE_ROOT=$TRAVIS_BUILD_DIR/ACE_TAO/ACE
-    - MPC_ROOT=$TRAVIS_BUILD_DIR/MPC
-    - TAO_ROOT=$TRAVIS_BUILD_DIR/ACE_TAO/TAO
+    # MPC settings
+    - MPC_ROOT=$TRAVIS_BUILD_DIR/ext/MPC
+    # ACE/TAO settings
+    - ACE_ROOT=$TRAVIS_BUILD_DIR/ext/ACE_TAO/ACE
+    - TAO_ROOT=$TRAVIS_BUILD_DIR/ext/ACE_TAO/TAO
     - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ACE_ROOT/lib
+    # Penguin settings
+    - PENGUIN_ROOT = $TRAVIS_BUILD_DIR
+    - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PENGUIN_ROOT/lib
 
 before_install:
+  - mkdir ext
+  - cd ext
   - git clone --depth 1 git://github.com/DOCGroup/MPC.git
   - git clone -b Latest_Micro --depth 1 git://github.com/DOCGroup/ACE_TAO.git
+  - cd ..
+
+install:
+
+before_script:
+  # Copy additional build files into the correct locations
+  - cp build/config.h $ACE_ROOT/ace/config.h
+  - cp build/default.features $ACE_ROOT/bin/MakeProjectCreator/config/default.features
+  - cp build/platform_macros.GNU $ACE_ROOT/include/make_include/platform_macros.GNU
+  # Build dependencies
+  - cd $TAO_ROOT
+  - perl $ACE_ROOT/bin/mwc.pl -type gnuace -workers 2 TAO_ACE.mwc
+  - make -j 2
+  - cd $TRAVIS_BUILD_DIR
+
+script:
+  - perl $ACE_ROOT/bin/mwc.pl -type gnuace -workers 2 penguin.mwc
+  - make -j 2
