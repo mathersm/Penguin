@@ -27,6 +27,11 @@ before_install:
   - git clone -b Latest_Micro --depth 1 git://github.com/DOCGroup/ACE_TAO.git
   - cd ..
 
+branches:
+  only:
+    - develop
+    - master
+
 install:
 
 before_script:
