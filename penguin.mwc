@@ -1,0 +1,7 @@
+workspace {
+    cmdline += -include $PENGUIN_ROOT/MPC/config
+    cmdline += -feature_file $PENGUIN_ROOT/MPC/config/penguin.features
+    exclude {
+        ext
+    }
+}

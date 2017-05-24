@@ -1,0 +1,15 @@
+project(Penguin) : acelib {
+    sharedname  =   *
+    libout      =   $(PENGUIN_ROOT)/lib
+    includes    +=  $(PENGUIN_ROOT)
+    libpaths    +=  $(PENGUIN_ROOT)/lib	
+
+    macros      +=  PENGUIN_BUILD_DLL
+
+    prebuild    =   perl $(ACE_ROOT)/bin/generate_export_file.pl Penguin > Penguin_export.h
+
+    Header_Files {
+        Penguin_export.h
+    }
+
+}
