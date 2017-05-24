@@ -30,7 +30,7 @@ platform:
   - x64
 
 configuration:
-  - Release
+  - Debug
 
 build:
   parallel: true
