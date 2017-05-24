@@ -1,0 +1,4 @@
+workspace {
+    $(TAO_ROOT)/TAO_ACE.mwc    
+    penguin.mwc
+}
