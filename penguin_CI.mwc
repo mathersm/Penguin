@@ -1,4 +1,4 @@
 workspace {
     $(ACE_ROOT)/ace    
-    Penguin.mwc
+    penguin.mwc
 }

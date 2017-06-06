@@ -24,7 +24,7 @@ install:
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" amd64
   - copy %PENGUIN_ROOT%\build\config.h %ACE_ROOT%\ace
   - copy %PENGUIN_ROOT%\build\default.features %ACE_ROOT%\bin\MakeProjectCreator\config
-  - perl %ACE_ROOT%\bin\mwc.pl -type vs2017 %PENGUIN_ROOT%\Penguin_CI.mwc
+  - perl %ACE_ROOT%\bin\mwc.pl -type vs2017 %PENGUIN_ROOT%\penguin_CI.mwc
 
 platform:
   - x64
@@ -36,6 +36,6 @@ build:
   parallel: true
 
 build_script:
-  - msbuild "Penguin_CI.sln" /m /p:Configuration=Debug;Platform=x64 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - msbuild "penguin_CI.sln" /m /p:Configuration=Debug;Platform=x64 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 test: off

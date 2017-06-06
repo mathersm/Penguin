@@ -41,5 +41,5 @@ before_script:
   - cp build/platform_macros.GNU $ACE_ROOT/include/makeinclude/platform_macros.GNU
 
 script:
-  - perl $ACE_ROOT/bin/mwc.pl -type gnuace -workers 2 Penguin_CI.mwc
+  - perl $ACE_ROOT/bin/mwc.pl -type gnuace -workers 2 penguin_CI.mwc
   - make -j 2
