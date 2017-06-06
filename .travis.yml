@@ -8,8 +8,17 @@ os:
 compiler:
   - gcc
 
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-6
+
 env:
   global:
+    # Compiler settings
+    - CXX=g++-6
     # MPC settings
     - MPC_ROOT=$TRAVIS_BUILD_DIR/ext/MPC
     # ACE/TAO settings
@@ -19,6 +28,7 @@ env:
     # Penguin settings
     - PENGUIN_ROOT=$TRAVIS_BUILD_DIR
     - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PENGUIN_ROOT/lib
+
 
 before_install:
   - mkdir ext
