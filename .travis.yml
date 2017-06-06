@@ -50,5 +50,6 @@ before_script:
 
 script:
   - export CXX=g++-6
+  - $CXX --version
   - perl $ACE_ROOT/bin/mwc.pl -type gnuace -workers 2 penguin_CI.mwc
   - make -j 2
