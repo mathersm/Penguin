@@ -3,7 +3,7 @@ branches:
   - master
   - develop
 
-os: Visual Studio 2015
+os: Visual Studio 2017
 
 clone_depth: 10
 
@@ -11,7 +11,7 @@ install:
   - mkdir ext
   - cd ext
   - git clone --depth 1 git://github.com/DOCGroup/MPC.git
-  - git clone --depth 1 git://github.com/DOCGroup/ACE_TAO.git
+  - git clone -b Latest_Micro --depth 1 git://github.com/DOCGroup/ACE_TAO.git
   - cd ..
   - set MPC_ROOT=%CD%\ext\MPC
   - set ACE_ROOT=%CD%\ext\ACE_TAO\ACE
@@ -21,11 +21,10 @@ install:
   - set PATH=%ACE_ROOT%\bin:%PATH%
   - set PATH=%PENGUIN_ROOT%\lib:%PATH%
   - set PATH=%PENGUIN_ROOT%\bin:%PATH%
-  - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
+  - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" amd64
   - copy %PENGUIN_ROOT%\build\config.h %ACE_ROOT%\ace
   - copy %PENGUIN_ROOT%\build\default.features %ACE_ROOT%\bin\MakeProjectCreator\config
-  - perl %ACE_ROOT%\bin\mwc.pl -type vc14 %TAO_ROOT%\TAO_ACE.mwc
-  - perl %ACE_ROOT%\bin\mwc.pl -type vc14 %PENGUIN_ROOT%\penguin.mwc
+  - perl %ACE_ROOT%\bin\mwc.pl -type vs2017 %PENGUIN_ROOT%\Penguin_CI.mwc
 
 platform:
   - x64
@@ -37,7 +36,6 @@ build:
   parallel: true
 
 build_script:
-  - msbuild "%TAO_ROOT%\TAO_ACE.sln" /m /p:Configuration=Debug;Platform=x64
-  - msbuild "penguin.sln" /m /p:Configuration=Debug;Platform=x64 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - msbuild "Penguin_CI.sln" /m /p:Configuration=Debug;Platform=x64 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 test: off

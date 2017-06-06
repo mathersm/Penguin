@@ -1,4 +1,4 @@
 workspace {
-    $(TAO_ROOT)/TAO_ACE.mwc    
-    penguin.mwc
+    $(ACE_ROOT)/ace    
+    Penguin.mwc
 }

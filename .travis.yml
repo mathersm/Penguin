@@ -39,12 +39,7 @@ before_script:
   - cp build/config.h $ACE_ROOT/ace/config.h
   - cp build/default.features $ACE_ROOT/bin/MakeProjectCreator/config/default.features
   - cp build/platform_macros.GNU $ACE_ROOT/include/makeinclude/platform_macros.GNU
-  # Build dependencies
-  - cd $TAO_ROOT
-  - perl $ACE_ROOT/bin/mwc.pl -type gnuace -workers 2 TAO_ACE.mwc
-  - make -j 2
-  - cd $TRAVIS_BUILD_DIR
 
 script:
-  - perl $ACE_ROOT/bin/mwc.pl -type gnuace -workers 2 penguin.mwc
+  - perl $ACE_ROOT/bin/mwc.pl -type gnuace -workers 2 Penguin_CI.mwc
   - make -j 2
