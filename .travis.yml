@@ -17,8 +17,6 @@ addons:
 
 env:
   global:
-    # Compiler settings
-    - CXX=g++-6
     # MPC settings
     - MPC_ROOT=$TRAVIS_BUILD_DIR/ext/MPC
     # ACE/TAO settings
@@ -51,5 +49,6 @@ before_script:
   - cp build/platform_macros.GNU $ACE_ROOT/include/makeinclude/platform_macros.GNU
 
 script:
+  - export CXX=g++-6
   - perl $ACE_ROOT/bin/mwc.pl -type gnuace -workers 2 penguin_CI.mwc
   - make -j 2
