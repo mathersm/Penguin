@@ -8,6 +8,13 @@ os:
 compiler:
   - gcc
 
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-6
+
 env:
   global:
     # MPC settings
@@ -19,6 +26,7 @@ env:
     # Penguin settings
     - PENGUIN_ROOT=$TRAVIS_BUILD_DIR
     - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PENGUIN_ROOT/lib
+
 
 before_install:
   - mkdir ext
@@ -41,5 +49,7 @@ before_script:
   - cp build/platform_macros.GNU $ACE_ROOT/include/makeinclude/platform_macros.GNU
 
 script:
+  - export CXX=g++-6
+  - $CXX --version
   - perl $ACE_ROOT/bin/mwc.pl -type gnuace -workers 2 penguin_CI.mwc
   - make -j 2
