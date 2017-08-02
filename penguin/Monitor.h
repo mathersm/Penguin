@@ -1,13 +1,18 @@
+/*
+ * Copyright (c) 2017 Michael Mathers
+ */
 #ifndef PENGUIN_MONITOR_H
 #define PENGUIN_MONITOR_H
 
 
+#include "Penguin_export.h"
+#include <cassert>
 #include <mutex>
 
 
 namespace Penguin
 {
-    class Monitor
+    class Penguin_Export Monitor
     {
     public:
         typedef std::mutex                              _mutex_type;
@@ -42,6 +47,24 @@ namespace Penguin
         Monitor(Monitor&& other) = delete;
         Monitor& operator = (Monitor&& other) = delete;
     };
+
+
+    template <class Rep, class Period>
+    std::cv_status
+        Monitor::wait_for(_guard_type& guard, const std::chrono::duration<Rep, Period>& rel_time)
+    {
+        assert(guard.owns_lock());
+        return this->condition_variable_.wait_for(guard, rel_time);
+    }
+
+
+    template <class Clock, class Duration>
+    std::cv_status
+        Monitor::wait_until(_guard_type& guard, const std::chrono::time_point<Clock, Duration>& timeout_time)
+    {
+        assert(guard.owns_lock());
+        return this->condition_variable_.wait_until(guard, timeout_time);
+    }
 }
 
 

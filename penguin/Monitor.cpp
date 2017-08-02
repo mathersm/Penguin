@@ -1,5 +1,7 @@
+/*
+* Copyright (c) 2017 Michael Mathers
+*/
 #include "Monitor.h"
-#include <cassert>
 
 
 namespace Penguin
@@ -33,24 +35,6 @@ namespace Penguin
     {
         assert(guard.owns_lock());
         this->condition_variable_.wait(guard);
-    }
-
-
-    template <class Rep, class Period>
-    std::cv_status
-    Monitor::wait_for(_guard_type& guard, const std::chrono::duration<Rep, Period>& rel_time)
-    {
-        assert(guard.owns_lock());
-        return this->condition_variable_.wait_for(guard, rel_time);
-    }
-
-
-    template <class Clock, class Duration>
-    std::cv_status
-    Monitor::wait_until(_guard_type& guard, const std::chrono::time_point<Clock, Duration>& timeout_time)
-    {
-        assert(guard.owns_lock());
-        return this->condition_variable_.wait_until(guard, timeout_time);
     }
 
 

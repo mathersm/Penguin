@@ -1,0 +1,5 @@
+project(Test_Monitor) : penguinexe {
+
+    exename =   *
+}
+
