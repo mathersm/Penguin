@@ -51,7 +51,7 @@ namespace Penguin
 
     template <class Rep, class Period>
     std::cv_status
-        Monitor::wait_for(_guard_type& guard, const std::chrono::duration<Rep, Period>& rel_time)
+    Monitor::wait_for(_guard_type& guard, const std::chrono::duration<Rep, Period>& rel_time)
     {
         assert(guard.owns_lock());
         return this->condition_variable_.wait_for(guard, rel_time);
@@ -60,7 +60,7 @@ namespace Penguin
 
     template <class Clock, class Duration>
     std::cv_status
-        Monitor::wait_until(_guard_type& guard, const std::chrono::time_point<Clock, Duration>& timeout_time)
+    Monitor::wait_until(_guard_type& guard, const std::chrono::time_point<Clock, Duration>& timeout_time)
     {
         assert(guard.owns_lock());
         return this->condition_variable_.wait_until(guard, timeout_time);

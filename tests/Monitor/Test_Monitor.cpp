@@ -31,6 +31,14 @@ namespace
     }
 
 
+    template <class Clock, class Duration>
+    std::cv_status wait_until(Penguin::Monitor* mon, const std::chrono::time_point<Clock, Duration>& timeout_time)
+    {
+        Penguin::Monitor::_guard_type guard(*mon);
+        return mon->wait_until(guard, timeout_time);
+    }
+
+
     int signal(Penguin::Monitor* mon)
     {
         Penguin::Monitor::_guard_type guard(*mon);
@@ -69,6 +77,7 @@ namespace
         std::vector<std::future<int>> wait_results;
         wait_results.push_back(std::async(std::launch::async, wait, &monitor));
         wait_results.push_back(std::async(std::launch::async, wait, &monitor));
+        wait_results.push_back(std::async(std::launch::async, wait, &monitor));
         std::future<int> broadcast_result = std::async(std::launch::async, broadcast, &monitor);
 
         int result = std::accumulate(wait_results.begin(), wait_results.end(), 0, [](int a, std::future<int>& f) {return a + f.get(); });
@@ -81,11 +90,29 @@ namespace
     {
         Penguin::Monitor monitor;
 
+
+
         std::future<std::cv_status> wait_result = std::async(std::launch::async, wait_for<int, std::ratio<1,1>>, &monitor, std::chrono::duration<int, std::ratio<1,1>>(1));
         std::cv_status timeout_result = wait_result.get();
         
         int result = timeout_result == std::cv_status::no_timeout;
         print_test_result(result, "test_wait_for_timeout()");
+        return result;
+    }
+
+
+    int test_wait_until_timeout(void)
+    {
+        Penguin::Monitor monitor;
+
+        auto time_now = std::chrono::system_clock::now();
+        auto timeout = time_now + std::chrono::seconds(1);
+        std::future<std::cv_status> wait_result = std::async(std::launch::async, wait_until<std::chrono::system_clock, std::chrono::system_clock::duration>, &monitor, timeout);
+
+        std::cv_status timeout_result = wait_result.get();
+
+        int result = timeout_result == std::cv_status::no_timeout;
+        print_test_result(result, "test_wait_until_timeout()");
         return result;
     }
 }
@@ -98,5 +125,6 @@ int main(int argc, char *argv[])
     result |= test_notify_one();
     result |= test_notify_all();
     result |= test_wait_for_timeout();
+    result |= test_wait_until_timeout();
     return result;
 }
