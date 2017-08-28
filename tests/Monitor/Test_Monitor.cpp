@@ -23,14 +23,6 @@ namespace
     }
 
 
-    //template <class Rep, class Period>
-    //std::cv_status wait_for(Penguin::Monitor* mon, const std::chrono::duration<Rep, Period>& rel_time)
-    //{
-    //    Penguin::Monitor::_guard_type guard(*mon);
-    //    return mon->wait_for(guard, rel_time);
-    //}
-
-
     std::cv_status wait_for(Penguin::Monitor* mon, const std::chrono::seconds& rel_time)
     {
         Penguin::Monitor::_guard_type guard(*mon);
@@ -64,9 +56,6 @@ namespace
     }
 
 
-    /*
-     * Test signalling one thread at a time waiting on a monitor.
-     */
     int test_notify_one(void)
     {
         Penguin::Monitor monitor;
