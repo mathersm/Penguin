@@ -37,7 +37,6 @@ namespace Penguin
         std::atomic<long> waiters_;
 
         Penguin::Monitor permit_monitor_;
-        Penguin::Monitor waiter_monitor_;
 
         Semaphore(const Semaphore& other) = delete;
         Semaphore& operator = (const Semaphore& other) = delete;
@@ -51,7 +50,6 @@ namespace Penguin
     std::cv_status
     Semaphore::try_acquire_for(const std::chrono::duration<Rep, Period>& rel_time)
     {
-        std::cv_status return_value = std::cv_status::no_timeout;
         Penguin::Monitor::_guard_type permit_guard(this->permit_monitor_);
         this->waiters_.fetch_add(1);
         if (this->permits_.load() > 0)
@@ -60,17 +58,16 @@ namespace Penguin
         }
         else
         {
-            return_value = this->permit_monitor_.wait_for(permit_guard, rel_time, [this] {return this->permits_.load() > 0; });
-            if (return_value == std::cv_status::timeout)
+            if (false == this->permit_monitor_.wait_for(permit_guard, rel_time, [this] {return this->permits_.load() > 0; }))
             {
                 this->waiters_.fetch_sub(1);
-                return return_value;
+                return std::cv_status::timeout;
             }
         }
         assert(this->permits_.load() > 0);
         this->permits_.fetch_sub(1);
         this->waiters_.fetch_sub(1);
-        return return_value;
+        return std::cv_status::no_timeout;
     }
 
 
@@ -78,7 +75,6 @@ namespace Penguin
     std::cv_status
     Semaphore::try_acquire_until(const std::chrono::time_point<Clock, Duration>& timeout_time)
     {
-        std::cv_status return_value = std::cv_status::no_timeout;
         Penguin::Monitor::_guard_type permit_guard(this->permit_monitor_);
         this->waiters_.fetch_add(1);
         if (this->permits_.load() > 0)
@@ -87,17 +83,16 @@ namespace Penguin
         }
         else
         {
-            return_value = this->permit_monitor_.wait_until(permit_guard, timeout_time, [this] {return this->permits_.load() > 0; });
-            if (return_value == std::cv_status::timeout)
+            if (false == this->permit_monitor_.wait_until(permit_guard, timeout_time, [this] {return this->permits_.load() > 0; }))
             {
                 this->waiters_.fetch_sub(1);
-                return return_value;
+                return std::cv_status::timeout;
             }
         }
         assert(this->permits_.load() > 0);
         this->permits_.fetch_sub(1);
         this->waiters_.fetch_sub(1);
-        return return_value;
+        return std::cv_status::no_timeout;
     }
 }
 
