@@ -8,6 +8,7 @@
 #include "Penguin_export.h"
 #include <cassert>
 #include <mutex>
+#include <condition_variable>
 
 
 namespace Penguin
