@@ -1,8 +1,5 @@
 /*
- * (c) Copyright 2017
- *
- * @file     Exception.h
- * @author   Michael Mathers
+ * Copyright (c) 2017 Michael Mathers
  */
 #ifndef PENGUIN_EXCEPTION_H
 #define PENGUIN_EXCEPTION_H
