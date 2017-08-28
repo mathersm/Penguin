@@ -23,11 +23,19 @@ namespace
     }
 
 
-    template <class Rep, class Period>
-    std::cv_status wait_for(Penguin::Monitor* mon, const std::chrono::duration<Rep,Period>& rel_time)
+    //template <class Rep, class Period>
+    //std::cv_status wait_for(Penguin::Monitor* mon, const std::chrono::duration<Rep, Period>& rel_time)
+    //{
+    //    Penguin::Monitor::_guard_type guard(*mon);
+    //    return mon->wait_for(guard, rel_time);
+    //}
+
+
+    std::cv_status wait_for(Penguin::Monitor* mon, const std::chrono::seconds& rel_time)
     {
         Penguin::Monitor::_guard_type guard(*mon);
-        return mon->wait_for(guard, rel_time);
+        bool wait_return_value = mon->wait_for(guard, rel_time, [] {return false; });
+        return (wait_return_value ? std::cv_status::no_timeout : std::cv_status::timeout);
     }
 
 
@@ -35,7 +43,8 @@ namespace
     std::cv_status wait_until(Penguin::Monitor* mon, const std::chrono::time_point<Clock, Duration>& timeout_time)
     {
         Penguin::Monitor::_guard_type guard(*mon);
-        return mon->wait_until(guard, timeout_time);
+        bool wait_return_value = mon->wait_until(guard, timeout_time, [] {return false; });
+        return (wait_return_value ? std::cv_status::no_timeout : std::cv_status::timeout);
     }
 
 
@@ -53,6 +62,7 @@ namespace
         mon->notify_all();
         return 0;
     }
+
 
     /*
      * Test signalling one thread at a time waiting on a monitor.
@@ -90,11 +100,9 @@ namespace
     {
         Penguin::Monitor monitor;
 
-
-
-        std::future<std::cv_status> wait_result = std::async(std::launch::async, wait_for<int, std::ratio<1,1>>, &monitor, std::chrono::duration<int, std::ratio<1,1>>(1));
+        std::future<std::cv_status> wait_result = std::async(std::launch::async, wait_for, &monitor, std::chrono::seconds(1));
         std::cv_status timeout_result = wait_result.get();
-        
+
         int result = timeout_result == std::cv_status::no_timeout;
         print_test_result(result, "test_wait_for_timeout()");
         return result;
