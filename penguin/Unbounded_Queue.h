@@ -5,7 +5,6 @@
 #define PENGUIN_UNBOUNDED_QUEUE_H
 
 
-#include "Penguin_export.h"
 #include "Exception.h"
 #include "Semaphore.h"
 #include <list>
@@ -25,13 +24,13 @@ namespace Penguin
         void push(const T& value);
         void push(T&& value);
 
-        T& pop(void);
+        T pop(void);
 
         template <class Rep, class Period>
-        T& try_pop_for(const std::chrono::duration<Rep, Period>& rel_time);
+        T try_pop_for(const std::chrono::duration<Rep, Period>& rel_time);
 
         template <class Clock, class Duration>
-        T& try_pop_until(const std::chrono::time_point<Clock, Duration>& timeout_time);
+        T try_pop_until(const std::chrono::time_point<Clock, Duration>& timeout_time);
 
     protected:
 
@@ -64,7 +63,7 @@ namespace Penguin
     size_t
     Unbounded_Queue<T>::size(void) const
     {
-        assert(itemCount_.permits()) == queue_.size());
+        assert(itemCount_.permits() == queue_.size());
         return itemCount_.permits();
     }
 
@@ -88,7 +87,7 @@ namespace Penguin
 
 
     template <typename T>
-    T&
+    T
     Unbounded_Queue<T>::pop(void)
     {
         this->itemCount_.acquire();
@@ -98,9 +97,10 @@ namespace Penguin
     }
 
 
+    template <typename T>
     template <class Rep, class Period>
-    T&
-    Semaphore::try_pop_for(const std::chrono::duration<Rep, Period>& rel_time)
+    T
+    Unbounded_Queue<T>::try_pop_for(const std::chrono::duration<Rep, Period>& rel_time)
     {
         if (std::cv_status::no_timeout == this->itemCount_.try_acquire_for(rel_time))
         {
@@ -112,9 +112,10 @@ namespace Penguin
     }
 
 
+    template <typename T>
     template <class Clock, class Duration>
-    T&
-    Semaphore::try_pop_until(const std::chrono::time_point<Clock, Duration>& timeout_time)
+    T
+    Unbounded_Queue<T>::try_pop_until(const std::chrono::time_point<Clock, Duration>& timeout_time)
     {
         if (std::cv_status::no_timeout == this->itemCount_.try_acquire_until(timeout_time))
         {
