@@ -2,6 +2,7 @@
 * Copyright (c) 2017 Michael Mathers
 */
 #include <penguin/Semaphore.h>
+#include <penguin/Profiler.h>
 #include <future>
 #include <iostream>
 #include <numeric>
@@ -189,5 +190,8 @@ int main(int argc, char *argv[])
     result |= test_permits();
     result |= test_try_acquire_for();
     result |= test_try_acquire_until();
+
+    PROFILE_DUMP;
+
     return result;
 }

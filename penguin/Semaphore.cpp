@@ -2,7 +2,7 @@
 * Copyright (c) 2017 Michael Mathers
 */
 #include "Semaphore.h"
-
+#include "Profiler.h"
 
 namespace Penguin
 {
@@ -10,17 +10,21 @@ namespace Penguin
         : permits_(permits)
         , waiters_(0)
     {
+        PROFILE("Semaphore::Semaphore");
     }
 
 
     Semaphore::~Semaphore(void)
     {
+        PROFILE("Semaphore::~Semaphore");
     }
 
 
     void
     Semaphore::acquire(void)
     {
+        PROFILE("Semaphore::acquire");
+
         Penguin::Monitor::_guard_type permit_guard(this->permit_monitor_);
         this->waiters_.fetch_add(1);
         if (this->permits_.load() > 0)
@@ -40,6 +44,8 @@ namespace Penguin
     void
     Semaphore::release(void)
     {
+        PROFILE("Semaphore::release");
+
         Penguin::Monitor::_guard_type permit_guard(this->permit_monitor_);
         this->permits_.fetch_add(1);
         this->permit_monitor_.notify_one();
@@ -49,6 +55,8 @@ namespace Penguin
     long
     Semaphore::permits(void) const
     {
+        PROFILE("Semaphore::permits");
+
         return this->permits_.load();
     }
 
@@ -56,6 +64,8 @@ namespace Penguin
     long
     Semaphore::waiters(void) const
     {
+        PROFILE("Semaphore::waiters");
+
         return this->waiters_.load();
     }
 }
