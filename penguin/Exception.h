@@ -11,10 +11,10 @@
 
 namespace Penguin
 {
-    struct Penguin_Export TimeoutException : public std::runtime_error
+    struct Penguin_Export Timeout_Exception : public std::runtime_error
     {
-        TimeoutException(const std::string &what);
-        TimeoutException(const char *what);
+        Timeout_Exception(const std::string &what);
+        Timeout_Exception(const char *what);
     };
 } // namespace Penguin
 
