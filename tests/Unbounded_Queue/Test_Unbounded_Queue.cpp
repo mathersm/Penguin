@@ -2,6 +2,7 @@
 * Copyright (c) 2017 Michael Mathers
 */
 #include <penguin/Unbounded_Queue.h>
+#include <penguin/Profiler.h>
 #include <future>
 #include <iostream>
 #include <numeric>
@@ -36,6 +37,7 @@ namespace
         }
         catch (const Penguin::Timeout_Exception& ex)
         {
+            ex;
             return -1;
         }
     }
@@ -49,6 +51,7 @@ namespace
         }
         catch (const Penguin::Timeout_Exception& ex)
         {
+            ex;
             return -1;
         }
     }
@@ -159,5 +162,6 @@ int main(int argc, char *argv[])
     result |= test_pop();
     result |= test_try_pop_for();
     result |= test_try_pop_until();
+
     return result;
 }

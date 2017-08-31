@@ -11,14 +11,18 @@
 #include <vector>
 
 
+#define PENGUIN_PROFILING_ON 0
+#define PENGUIN_PROFILER_ACCURACY std::micro
+#define PENGUIN_PROFILER_ACCURACY_TEXT "us"
+
 namespace Penguin
 {
     class Penguin_Export Profiler
     {
     public:
-        typedef std::chrono::high_resolution_clock          _clock_type;
-        typedef std::chrono::duration<float, std::nano>     _duration_type;
-        typedef std::chrono::time_point<_clock_type>        _time_point_type;
+        typedef std::chrono::high_resolution_clock                          _clock_type;
+        typedef std::chrono::duration<double, PENGUIN_PROFILER_ACCURACY>    _duration_type;
+        typedef std::chrono::time_point<_clock_type>                        _time_point_type;
 
         Profiler(const std::string& id);
         virtual ~Profiler(void);
@@ -31,16 +35,17 @@ namespace Penguin
 
         std::string identifier_;
         _time_point_type start_time_;
+        _time_point_type finish_time_;
     };
 }
 
 
-#if 1
-#define PROFILE(str) Penguin::Profiler(str)
-#define PROFILE_DUMP Penguin::Profiler::dump_results()
+#if defined(PENGUIN_PROFILING_ON) && (PENGUIN_PROFILING_ON > 0)
+#define PENGUIN_PROFILE(str) Penguin::Profiler _profiler(str)
+#define PENGUIN_PROFILE_DUMP Penguin::Profiler::dump_results()
 #else
-# define PROFILE(str)
-# define PROFILE_DUMP
+# define PENGUIN_PROFILE(str)
+# define PENGUIN_PROFILE_DUMP
 #endif
 
 #endif // PENGUIN_PROFILER_H

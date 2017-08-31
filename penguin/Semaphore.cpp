@@ -10,20 +10,20 @@ namespace Penguin
         : permits_(permits)
         , waiters_(0)
     {
-        PROFILE("Semaphore::Semaphore");
+        PENGUIN_PROFILE(__FUNCTION__);
     }
 
 
     Semaphore::~Semaphore(void)
     {
-        PROFILE("Semaphore::~Semaphore");
+        PENGUIN_PROFILE(__FUNCTION__);
     }
 
 
     void
     Semaphore::acquire(void)
     {
-        PROFILE("Semaphore::acquire");
+        PENGUIN_PROFILE(__FUNCTION__);
 
         Penguin::Monitor::_guard_type permit_guard(this->permit_monitor_);
         this->waiters_.fetch_add(1);
@@ -44,7 +44,7 @@ namespace Penguin
     void
     Semaphore::release(void)
     {
-        PROFILE("Semaphore::release");
+        PENGUIN_PROFILE(__FUNCTION__);
 
         Penguin::Monitor::_guard_type permit_guard(this->permit_monitor_);
         this->permits_.fetch_add(1);
@@ -55,7 +55,7 @@ namespace Penguin
     long
     Semaphore::permits(void) const
     {
-        PROFILE("Semaphore::permits");
+        PENGUIN_PROFILE(__FUNCTION__);
 
         return this->permits_.load();
     }
@@ -64,7 +64,7 @@ namespace Penguin
     long
     Semaphore::waiters(void) const
     {
-        PROFILE("Semaphore::waiters");
+        PENGUIN_PROFILE(__FUNCTION__);
 
         return this->waiters_.load();
     }
