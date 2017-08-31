@@ -36,6 +36,7 @@ namespace
         }
         catch (const Penguin::Timeout_Exception& ex)
         {
+            ex;
             return -1;
         }
     }
@@ -49,6 +50,7 @@ namespace
         }
         catch (const Penguin::Timeout_Exception& ex)
         {
+            ex;
             return -1;
         }
     }
@@ -159,5 +161,6 @@ int main(int argc, char *argv[])
     result |= test_pop();
     result |= test_try_pop_for();
     result |= test_try_pop_until();
+
     return result;
 }

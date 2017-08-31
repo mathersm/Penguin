@@ -189,5 +189,6 @@ int main(int argc, char *argv[])
     result |= test_permits();
     result |= test_try_acquire_for();
     result |= test_try_acquire_until();
+
     return result;
 }
