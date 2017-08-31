@@ -12,8 +12,10 @@
 
 
 #define PENGUIN_PROFILING_ON 0
+#define PENGUIN_CORE_PROFILING_ON 0
 #define PENGUIN_PROFILER_ACCURACY std::micro
 #define PENGUIN_PROFILER_ACCURACY_TEXT "us"
+
 
 namespace Penguin
 {
@@ -43,8 +45,14 @@ namespace Penguin
 #if defined(PENGUIN_PROFILING_ON) && (PENGUIN_PROFILING_ON > 0)
 #define PENGUIN_PROFILE(str) Penguin::Profiler _profiler(str)
 #define PENGUIN_PROFILE_DUMP Penguin::Profiler::dump_results()
+# if defined(PENGUIN_CORE_PROFILING_ON) && (PENGUIN_CORE_PROFILING_ON > 0)
+#  define PENGUIN_CORE_PROFILE(str) Penguin::Profiler _core_profiler(str)
+# else
+#  define PENGUIN_CORE_PROFILE(str)
+# endif
 #else
 # define PENGUIN_PROFILE(str)
+# define PENGUIN_CORE_PROFILE(str)
 # define PENGUIN_PROFILE_DUMP
 #endif
 
