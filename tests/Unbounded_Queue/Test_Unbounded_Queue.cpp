@@ -2,7 +2,6 @@
 * Copyright (c) 2017 Michael Mathers
 */
 #include <penguin/Unbounded_Queue.h>
-#include <penguin/Profiler.h>
 #include <future>
 #include <iostream>
 #include <numeric>
