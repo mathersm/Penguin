@@ -25,6 +25,7 @@ namespace Penguin
         typedef std::chrono::high_resolution_clock                          _clock_type;
         typedef std::chrono::duration<double, PENGUIN_PROFILER_ACCURACY>    _duration_type;
         typedef std::chrono::time_point<_clock_type>                        _time_point_type;
+        typedef std::vector < _duration_type>                               _report_type;
 
         Profiler(const std::string& id);
         virtual ~Profiler(void);
@@ -33,7 +34,7 @@ namespace Penguin
 
     protected:
     private:
-        static std::map<std::string, std::vector<_duration_type>> profiler_reports;
+        static std::map<std::string, _report_type> profiler_reports;
 
         std::string identifier_;
         _time_point_type start_time_;

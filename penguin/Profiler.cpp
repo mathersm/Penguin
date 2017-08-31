@@ -11,7 +11,8 @@
 
 namespace Penguin
 {
-    std::map<std::string, std::vector<Profiler::_duration_type>> Profiler::profiler_reports;
+    std::map<std::string, Profiler::_report_type> Profiler::profiler_reports;
+
 
     Profiler::Profiler(const std::string& id)
         : identifier_(id)
@@ -38,7 +39,7 @@ namespace Penguin
         std::cout << std::endl;
         std::cout << "Penguin::Profiler" << std::endl;
         std::cout << "Calls : ID :  % of Total - [min , avg , max]" << std::endl;
-        for (auto report : Profiler::profiler_reports)
+        for (const auto& report : Profiler::profiler_reports)
         {
             _duration_type min = *std::min_element(std::begin(report.second), std::end(report.second));
             _duration_type max = *std::max_element(std::begin(report.second), std::end(report.second));
