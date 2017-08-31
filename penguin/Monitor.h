@@ -6,6 +6,7 @@
 
 
 #include "Penguin_export.h"
+#include "Profiler.h"
 #include <cassert>
 #include <mutex>
 #include <condition_variable>
@@ -63,6 +64,8 @@ namespace Penguin
     void
     Monitor::wait(_guard_type& guard, Predicate predicate)
     {
+        PENGUIN_CORE_PROFILE(__FUNCTION__);
+
         assert(guard.owns_lock());
         this->condition_variable_.wait(guard, predicate);
     }
@@ -72,6 +75,8 @@ namespace Penguin
     std::cv_status
     Monitor::wait_for(_guard_type& guard, const std::chrono::duration<Rep, Period>& rel_time)
     {
+        PENGUIN_CORE_PROFILE(__FUNCTION__);
+
         assert(guard.owns_lock());
         return this->condition_variable_.wait_for(guard, rel_time);
     }
@@ -81,6 +86,8 @@ namespace Penguin
     bool
     Monitor::wait_for(_guard_type& guard, const std::chrono::duration<Rep, Period>& rel_time, Predicate predicate)
     {
+        PENGUIN_CORE_PROFILE(__FUNCTION__);
+
         assert(guard.owns_lock());
         return this->condition_variable_.wait_for(guard, rel_time, predicate);
     }
@@ -90,6 +97,8 @@ namespace Penguin
     std::cv_status
     Monitor::wait_until(_guard_type& guard, const std::chrono::time_point<Clock, Duration>& timeout_time)
     {
+        PENGUIN_CORE_PROFILE(__FUNCTION__);
+
         assert(guard.owns_lock());
         return this->condition_variable_.wait_until(guard, timeout_time);
     }
@@ -99,6 +108,8 @@ namespace Penguin
     bool
     Monitor::wait_until(_guard_type& guard, const std::chrono::time_point<Clock, Duration>& timeout_time, Predicate predicate)
     {
+        PENGUIN_CORE_PROFILE(__FUNCTION__);
+
         assert(guard.owns_lock());
         return this->condition_variable_.wait_until(guard, timeout_time, predicate);
     }

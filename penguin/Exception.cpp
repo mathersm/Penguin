@@ -10,13 +10,13 @@ namespace Penguin
     Timeout_Exception::Timeout_Exception(const std::string &what)
         : std::runtime_error(what)
     {
-        PENGUIN_PROFILE(__FUNCTION__);
+        PENGUIN_CORE_PROFILE(__FUNCTION__);
     }
 
 
     Timeout_Exception::Timeout_Exception(const char *what)
         : std::runtime_error(what)
     {
-        PENGUIN_PROFILE(__FUNCTION__);
+        PENGUIN_CORE_PROFILE(__FUNCTION__);
     }
 }
