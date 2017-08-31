@@ -37,7 +37,6 @@ namespace Penguin
 
         std::string identifier_;
         _time_point_type start_time_;
-        _time_point_type finish_time_;
     };
 }
 
