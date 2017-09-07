@@ -27,7 +27,7 @@ namespace Penguin
         typedef std::chrono::time_point<_clock_type>                        _time_point_type;
         typedef std::vector < _duration_type>                               _report_type;
 
-        Profiler(const std::string& id);
+        explicit Profiler(const std::string& id);
         virtual ~Profiler(void);
 
         static void dump_results(void);

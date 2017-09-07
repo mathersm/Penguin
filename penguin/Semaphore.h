@@ -15,7 +15,7 @@ namespace Penguin
     class Penguin_Export Semaphore
     {
     public:
-        Semaphore(long permits = 0);
+        explicit Semaphore(long permits = 0);
         virtual ~Semaphore(void);
 
         void acquire(void);

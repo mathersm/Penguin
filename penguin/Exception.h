@@ -13,8 +13,8 @@ namespace Penguin
 {
     struct Penguin_Export Timeout_Exception : public std::runtime_error
     {
-        Timeout_Exception(const std::string &what);
-        Timeout_Exception(const char *what);
+        explicit Timeout_Exception(const std::string &what);
+        explicit Timeout_Exception(const char *what);
     };
 } // namespace Penguin
 
