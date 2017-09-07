@@ -11,6 +11,7 @@ project(Penguin) : acelib {
     Header_Files {
         Penguin_export.h
         Unbounded_Queue.h
+        Version.h
     }
 
 }
