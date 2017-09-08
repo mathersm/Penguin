@@ -1,4 +1,6 @@
 workspace {
+    cmdline += -include $PENGUIN_ROOT/MPC/config
+    cmdline += -feature_file $PENGUIN_ROOT/MPC/config/penguin.features
     $(ACE_ROOT)/ace/ace.mpc
     $(PENGUIN_ROOT)/penguin/penguin.mpc
 }
