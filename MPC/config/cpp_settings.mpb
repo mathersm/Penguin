@@ -1,5 +1,5 @@
 project {
     specific(vs2017) {
-        CppLanguageStandard = /std:c++17
+        LanguageStandard = stdcpp17
     }
 }
