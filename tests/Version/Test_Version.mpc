@@ -1,0 +1,5 @@
+project(Test_Version) : penguinexe {
+
+    exename =   *
+}
+

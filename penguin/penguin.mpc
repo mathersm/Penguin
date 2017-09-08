@@ -1,4 +1,4 @@
-project(Penguin) : acelib {
+project(Penguin) : acelib, cpp_settings {
     sharedname  =   *
     libout      =   $(PENGUIN_ROOT)/lib
     includes    +=  $(PENGUIN_ROOT)

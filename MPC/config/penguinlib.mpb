@@ -1,4 +1,4 @@
-project : acelib {
+project : acelib, cpp_settings {
   libout    =  $(PENGUIN_ROOT)/lib
   libpaths  += $(PENGUIN_ROOT)/lib
   includes  += $(PENGUIN_ROOT)
