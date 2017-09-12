@@ -5,7 +5,11 @@
 #define PENGUIN_VERSION_H
 
 
-#include <string_view>
+#if defined(__GNUG__)
+# include <experimental/string_view>
+#elif defined(_MSC_VER)
+# include <string_view>
+#endif
 
 
 namespace Penguin
