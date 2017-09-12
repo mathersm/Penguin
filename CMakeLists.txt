@@ -28,6 +28,13 @@ add_compile_options(/wd4275)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
 endif (MSVC)
 
+
+# Unix-specific options
+if (UNIX)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
+endif (UNIX)
+
+
 # Recurse into other subdirectories
 add_subdirectory(penguin)
 add_subdirectory(tests)
