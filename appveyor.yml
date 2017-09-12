@@ -12,6 +12,8 @@ install:
   - set PATH=%PENGUIN_ROOT%\lib:%PATH%
   - set PATH=%PENGUIN_ROOT%\bin:%PATH%
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" amd64
+  - msbuild /version
+  - cmake --version
   - cmake -G "Visual Studio 15 2017 Win64"
 
 platform:
@@ -19,11 +21,14 @@ platform:
 
 configuration:
   - Debug
+  - Release
 
 build:
+  project: "Penguin.sln"
   parallel: true
+  verbosity: quiet
 
-build_script:
-  - msbuild "Penguin.sln" /m /p:Configuration=Debug;Platform=x64 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+#build_script:
+#  - msbuild "Penguin.sln" /m /p:Platform=x64 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 test: off
