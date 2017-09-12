@@ -1,9 +1,0 @@
-project : acelib {
-  exeout    =  $(PENGUIN_ROOT)/bin
-  
-  libpaths  += $(PENGUIN_ROOT)/lib
-  includes  += $(PENGUIN_ROOT)
-
-  libs      +=  Penguin
-  after     +=  Penguin
-}

@@ -1,5 +1,0 @@
-project(Test_Unbounded_Queue) : penguinexe {
-
-    exename =   *
-}
-
