@@ -18,3 +18,7 @@ generate_export_header(Penguin
     EXPORT_MACRO_NAME Penguin_Export
     EXPORT_FILE_NAME Penguin_export.h
     STATIC_DEFINE Penguin_BUILT_AS_STATIC)
+
+if (UNIX)
+target_link_libraries(Penguin pthread)
+endif (UNIX)
