@@ -1,5 +1,0 @@
-project {
-    specific(vs2017) {
-        LanguageStandard = stdcpp17
-    }
-}
