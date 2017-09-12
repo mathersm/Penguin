@@ -1,5 +1,0 @@
-project(Test_Semaphore) : penguinexe {
-
-    exename =   *
-}
-
