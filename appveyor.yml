@@ -26,9 +26,6 @@ configuration:
 build:
   project: "Penguin.sln"
   parallel: true
-  verbosity: quiet
-
-#build_script:
-#  - msbuild "Penguin.sln" /m /p:Platform=x64 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  verbosity: minimal
 
 test: off
