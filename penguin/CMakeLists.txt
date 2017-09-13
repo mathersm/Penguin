@@ -2,6 +2,7 @@
 add_library (Penguin SHARED
     Exception.cpp
     Exception.h
+    Language.h
     Monitor.cpp
     Monitor.h
     Penguin_export.h
