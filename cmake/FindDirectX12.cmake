@@ -18,9 +18,6 @@ find_path (
   DOC "DirectX12 dxgi.h include directory"
 )
 
-message("DirectX12 include directories = " "${DirectX12_D3D12_DIR}" " and " "${DirectX12_DXGI_DIR}")
-
-
 find_library (
   DirectX12_D3D12_LIBRARY
   NAMES d3d12
@@ -36,8 +33,6 @@ find_library (
   PATH_SUFFIXES "/um/x64"
   DOC "DirectX12 DXGI library"
 )
-
-message("DirectX12 libraries = " "${DirectX12_D3D12_LIBRARY}" " and " "${DirectX12_DXGI_LIBRARY}")
 
 include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
