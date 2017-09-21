@@ -35,7 +35,7 @@ namespace
         return (result == std::cv_status::no_timeout ? 0 : -1);
     }
 
-    
+
     int try_acquire_until(Penguin::Semaphore* sema)
     {
         std::cv_status result = sema->try_acquire_until(std::chrono::system_clock::now() + std::chrono::seconds(3));
@@ -48,7 +48,7 @@ namespace
         Penguin::Semaphore semaphore(0);
 
         std::future<int> acquire_result = std::async(std::launch::async, acquire, &semaphore);
-        std::future<int> release_result = std::async(std::launch::async, release, &semaphore);
+        std::async(std::launch::async, release, &semaphore);
 
         int result = acquire_result.get();
         print_test_result(result, "test_acquire()");

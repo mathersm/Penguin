@@ -41,7 +41,7 @@ namespace
         }
     }
 
-    
+
     int try_pop_until(Penguin::Unbounded_Queue<int>* queue)
     {
         try
