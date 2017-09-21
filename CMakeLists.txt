@@ -36,4 +36,5 @@ endif (UNIX)
 
 # Recurse into other subdirectories
 add_subdirectory(penguin)
+add_subdirectory(samples)
 add_subdirectory(tests)
