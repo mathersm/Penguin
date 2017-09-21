@@ -1,5 +1,5 @@
 # Find the include directories and libraries for Vulkan
-find_package(Vulkan REQUIRED)
+find_package(Vulkan)
 
 if (Vulkan_FOUND)
 
