@@ -1,5 +1,6 @@
 cmake_minimum_required (VERSION 3.2)
 
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/lib")
@@ -36,4 +37,5 @@ endif (UNIX)
 
 # Recurse into other subdirectories
 add_subdirectory(penguin)
+add_subdirectory(samples)
 add_subdirectory(tests)
