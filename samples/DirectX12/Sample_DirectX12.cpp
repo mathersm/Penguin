@@ -26,10 +26,29 @@ namespace
         for (const auto& adapter : adapter_list)
         {
             std::cout << "Adapter:" << '\n';
-            std::cout << std::setw(28) << "LUID: " << std::get<1>(adapter).AdapterLuid.HighPart << std::get<1>(adapter).AdapterLuid.LowPart << '\n';
-            std::wcout << std::setw(28) << "Description: " << (std::get<1>(adapter).Description) << '\n';
-            std::cout << std::setw(28) << "Dedicated System Memory: " << std::get<1>(adapter).DedicatedSystemMemory << '\n';
-            std::cout << std::setw(28) << "Dedicated Video Memory: " << std::get<1>(adapter).DedicatedVideoMemory << '\n';
+            std::cout << std::setw(32) << "LUID: " << std::get<1>(adapter).AdapterLuid.HighPart << std::get<1>(adapter).AdapterLuid.LowPart << '\n';
+            std::wcout << std::setw(32) << "Description: " << (std::get<1>(adapter).Description) << '\n';
+            std::cout << std::setw(32) << "Revision: " << std::get<1>(adapter).Revision << '\n';
+            std::cout << std::setw(32) << "Dedicated System Memory: " << (std::get<1>(adapter).DedicatedSystemMemory / 1024 / 1024) << "MB" << '\n';
+            std::cout << std::setw(32) << "Shared System Memory: " << (std::get<1>(adapter).SharedSystemMemory / 1024 / 1024) << "MB" << '\n';
+            std::cout << std::setw(32) << "Dedicated Video Memory: " << (std::get<1>(adapter).DedicatedVideoMemory / 1024 / 1024) << "MB" << '\n';
+            std::cout << std::setw(32) << "Device ID: " << std::get<1>(adapter).DeviceId << '\n';
+            std::cout << std::setw(32) << "Subsystem ID: " << std::get<1>(adapter).SubSysId << '\n';
+            std::cout << std::setw(32) << "Vendor ID: " << std::get<1>(adapter).VendorId << '\n';
+            std::cout << std::setw(32) << "Flags: " << std::get<1>(adapter).Flags << '\n';
+
+            for (const auto& output : std::get<2>(adapter))
+            {
+                std::cout << "Output:" << '\n';
+                std::wcout << std::setw(32) << "Device name: " << std::get<1>(output).DeviceName << '\n';
+                std::cout << std::setw(32) << "Output width: " << (std::get<1>(output).DesktopCoordinates.right - std::get<1>(output).DesktopCoordinates.left) << " pixels" << '\n';
+                std::cout << std::setw(32) << "Output height: " << (std::get<1>(output).DesktopCoordinates.bottom - std::get<1>(output).DesktopCoordinates.top) << " pixels" << '\n';
+                std::cout << std::setw(32) << "Desktop coordinates (left): " << std::get<1>(output).DesktopCoordinates.left << '\n';
+                std::cout << std::setw(32) << "Desktop coordinates (right): " << std::get<1>(output).DesktopCoordinates.right << '\n';
+                std::cout << std::setw(32) << "Desktop coordinates (top): " << std::get<1>(output).DesktopCoordinates.top << '\n';
+                std::cout << std::setw(32) << "Desktop coordinates (bottom): " << std::get<1>(output).DesktopCoordinates.bottom << '\n';
+                std::cout << std::setw(32) << "Attached to desktop: " << std::get<1>(output).AttachedToDesktop << '\n';
+            }
         }
     }
 }
