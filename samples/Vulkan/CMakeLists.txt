@@ -21,7 +21,7 @@ if (Vulkan_FOUND)
       ${Vulkan_LIBRARIES}
   )
 else (Vulkan_FOUND)
-  message (FATAL_ERROR "Failed to find Vulkan!")
+  message (WARNING "Vulkan not found")
 endif (Vulkan_FOUND)
 
 
