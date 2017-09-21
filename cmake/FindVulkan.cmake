@@ -6,16 +6,12 @@ find_path (
   DOC "Vulkan vulkan/vulkan.h include directory"
 )
 
-message("Vulkan include directories = " "${Vulkan_DIR}")
-
 find_library (
   Vulkan_LIBRARY
   NAMES vulkan-1
   PATHS "$ENV{VK_SDK_PATH}/Bin"
   DOC "Vulkan library"
 )
-
-message("Vulkan libraries = " "${Vulkan_LIBRARY}")
 
 include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
@@ -24,6 +20,7 @@ find_package_handle_standard_args(
   REQUIRED_VARS
     Vulkan_DIR
     Vulkan_LIBRARY
+  FAIL_MESSAGE "Vulkan SDK not found"
 )
 
 if (Vulkan_FOUND)
