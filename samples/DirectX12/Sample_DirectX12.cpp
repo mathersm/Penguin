@@ -12,12 +12,12 @@
 
 namespace
 {
-    typedef Microsoft::WRL::ComPtr<IDXGIAdapter1>                                   _base_adapter_type;
-    typedef Microsoft::WRL::ComPtr<IDXGIOutput>                                     _base_output_type;
-    typedef std::tuple<_base_output_type, DXGI_OUTPUT_DESC>                         _output_type;
-    typedef std::vector<_output_type>                                               _output_list_type;
-    typedef std::tuple<_base_adapter_type, DXGI_ADAPTER_DESC1, _output_list_type>   _adapter_type;
-    typedef std::vector<_adapter_type>                                              _adapter_list_type;
+    using _base_adapter_type    = Microsoft::WRL::ComPtr<IDXGIAdapter1>;
+    using _base_output_type     = Microsoft::WRL::ComPtr<IDXGIOutput>;
+    using _output_type          = std::tuple<_base_output_type, DXGI_OUTPUT_DESC>;
+    using _output_list_type     = std::vector<_output_type>;
+    using _adapter_type         = std::tuple<_base_adapter_type, DXGI_ADAPTER_DESC1, _output_list_type>;
+    using _adapter_list_type    = std::vector<_adapter_type>;
 
 
     void print_adapter_and_output_information(const _adapter_list_type& adapter_list)
