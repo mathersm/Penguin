@@ -17,9 +17,9 @@ namespace Penguin
     class Penguin_Export Monitor
     {
     public:
-        typedef std::mutex                      _mutex_type;
-        typedef std::condition_variable         _condition_variable_type;
-        typedef std::unique_lock<_mutex_type>   _guard_type;
+        using _mutex_type               = std::mutex;
+        using _condition_variable_type  = std::condition_variable;
+        using _guard_type               = std::unique_lock<_mutex_type>;
 
         Monitor(void);
         virtual ~Monitor(void);

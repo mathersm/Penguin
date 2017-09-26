@@ -15,9 +15,9 @@
 namespace Penguin
 {
 #if defined(__GNUG__)
-    typedef std::experimental::string_view string_view;
+    using string_view = std::experimental::string_view;
 #elif defined(_MSC_VER)
-    typedef std::string_view string_view;
+    using string_view = std::string_view;
 #endif
 }
 

@@ -22,10 +22,10 @@ namespace Penguin
     class Penguin_Export Profiler
     {
     public:
-        typedef std::chrono::high_resolution_clock                          _clock_type;
-        typedef std::chrono::duration<double, PENGUIN_PROFILER_ACCURACY>    _duration_type;
-        typedef std::chrono::time_point<_clock_type>                        _time_point_type;
-        typedef std::vector < _duration_type>                               _report_type;
+        using _clock_type       = std::chrono::high_resolution_clock;
+        using _duration_type    = std::chrono::duration<double, PENGUIN_PROFILER_ACCURACY>;
+        using _time_point_type  = std::chrono::time_point<_clock_type>;
+        using _report_type      = std::vector<_duration_type>;
 
         explicit Profiler(const std::string& id);
         virtual ~Profiler(void);
