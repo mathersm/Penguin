@@ -29,7 +29,4 @@ build:
   verbosity: minimal
 
 test_script:
- - cmd: echo %CONFIGURATION%
- - cmd: echo %PATH%
- - cmd: echo %PENGUIN_ROOT%
  - cmd: ctest -C %CONFIGURATION%
