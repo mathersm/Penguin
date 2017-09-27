@@ -29,4 +29,4 @@ build:
   verbosity: minimal
 
 test_script:
- - cmd: ctest
+ - cmd: ctest -C CONFIGURATION
