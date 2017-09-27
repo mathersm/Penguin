@@ -35,3 +35,4 @@ script:
   - cmake --version
   - cmake .
   - make -j 2
+  - ctest
