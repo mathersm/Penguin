@@ -12,4 +12,7 @@ include_directories(${CMAKE_SOURCE_DIR})
 link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 target_link_libraries (Test_Version LINK_PUBLIC Penguin)
 
-add_test (Test_Version Test_Version)
+add_test (
+    NAME Test_Version
+    COMMAND Test_Version
+)
