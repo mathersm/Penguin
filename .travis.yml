@@ -33,5 +33,6 @@ script:
   - export CXX=g++-6
   - $CXX --version
   - cmake --version
-  - cmake --build . -- -j2
+  - cmake .
+  - make -j2
   - ctest -j2
