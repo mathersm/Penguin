@@ -102,6 +102,9 @@ namespace
         wait_results.push_back(std::async(std::launch::async, wait, &monitor));
         std::future<int> broadcast_result = std::async(std::launch::async, broadcast, &monitor);
 
+        // Make sure to broadcast
+        broadcast_result.get();
+
         int result = std::accumulate(wait_results.begin(), wait_results.end(), 0, [](int a, std::future<int>& f) {return a + f.get(); });
         print_test_result(result, "test_notify_all()");
         return result;
