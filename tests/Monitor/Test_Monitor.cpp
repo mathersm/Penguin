@@ -61,9 +61,32 @@ namespace
         Penguin::Monitor monitor;
 
         std::future<int> wait_result = std::async(std::launch::async, wait, &monitor);
-        std::async(std::launch::async, signal, &monitor);
+        std::future<int> signal_result = std::async(std::launch::async, signal, &monitor);
 
-        int result = wait_result.get();
+        std::future_status wait_status = wait_result.wait_for(std::chrono::seconds(2));
+        std::future_status signal_status;
+
+        int result = -1;
+        switch (wait_status)
+        {
+        case std::future_status::ready:
+            result = wait_result.get();
+            break;
+        case std::future_status::deferred:
+            result = -1;
+            break;
+        case std::future_status::timeout:
+            signal_status = signal_result.wait_for(std::chrono::seconds(2));
+            wait_status = wait_result.wait_for(std::chrono::seconds(2));
+            if (wait_status == std::future_status::ready)
+            {
+                result = wait_result.get();
+            }
+            break;
+        default:
+            break;
+        }
+        
         print_test_result(result, "test_notify_one()");
         return result;
     }
