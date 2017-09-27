@@ -29,4 +29,5 @@ build:
   verbosity: minimal
 
 test_script:
+ - cmd: echo %CONFIGURATION%
  - cmd: ctest -C %CONFIGURATION%
