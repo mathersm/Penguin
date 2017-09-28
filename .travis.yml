@@ -5,16 +5,15 @@ language: cpp
 os:
   - linux
 
-compiler:
-  - gcc
-
 addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
+      - llvm-toolchain-precise-3.9
     packages:
       - cmake
       - g++-6
+      - clang++-3.9
 
 env:
   global:
@@ -28,9 +27,17 @@ branches:
     - develop
     - master
 
+matrix:
+  include:
+    - compiler: gcc
+      env: COMPILER=g++-6
+
+    - compiler: clang
+      env: COMPILER=clang++
+
 
 script:
-  - export CXX=g++-6
+  - export CXX=${COMPILER}
   - $CXX --version
   - cmake --version
   - cmake .
