@@ -62,31 +62,23 @@ namespace
 
         std::future<int> wait_result = std::async(std::launch::async, wait, &monitor);
         std::future<int> signal_result = std::async(std::launch::async, signal, &monitor);
-
-        std::future_status wait_status = wait_result.wait_for(std::chrono::seconds(2));
-        std::future_status signal_status;
+        
+        std::future_status wait_status = wait_result.wait_for(std::chrono::seconds(1));
 
         int result = -1;
         switch (wait_status)
         {
         case std::future_status::ready:
-            result = wait_result.get();
-            break;
-        case std::future_status::deferred:
-            result = -1;
             break;
         case std::future_status::timeout:
-            signal_status = signal_result.wait_for(std::chrono::seconds(2));
-            wait_status = wait_result.wait_for(std::chrono::seconds(2));
-            if (wait_status == std::future_status::ready)
-            {
-                result = wait_result.get();
-            }
+            std::async(std::launch::async, signal, &monitor); // Temporary destructor will wait for signal to finish
             break;
         default:
-            break;
+            print_test_result(result, "test_notify_one()");
+            return result;
         }
         
+        result = wait_result.get();
         print_test_result(result, "test_notify_one()");
         return result;
     }
@@ -95,17 +87,27 @@ namespace
     int test_notify_all(void)
     {
         Penguin::Monitor monitor;
+        int result = -1;
 
         std::vector<std::future<int>> wait_results;
         wait_results.push_back(std::async(std::launch::async, wait, &monitor));
         wait_results.push_back(std::async(std::launch::async, wait, &monitor));
         wait_results.push_back(std::async(std::launch::async, wait, &monitor));
-        std::future<int> broadcast_result = std::async(std::launch::async, broadcast, &monitor);
+    
+        std::future_status wait_status = wait_results[0].wait_for(std::chrono::seconds(1));
+        switch (wait_status)
+        {
+        case std::future_status::ready:
+            break;
+        case std::future_status::timeout:
+            std::async(std::launch::async, broadcast, &monitor);
+            break;
+        default:
+            print_test_result(result, "test_notify_all()");
+            return result;
+        }
 
-        // Make sure to broadcast
-        broadcast_result.get();
-
-        int result = std::accumulate(wait_results.begin(), wait_results.end(), 0, [](int a, std::future<int>& f) {return a + f.get(); });
+        result = std::accumulate(wait_results.begin(), wait_results.end(), 0, [](int a, std::future<int>& f) {return a + f.get(); });
         print_test_result(result, "test_notify_all()");
         return result;
     }
