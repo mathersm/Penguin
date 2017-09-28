@@ -71,7 +71,8 @@ namespace
         case std::future_status::ready:
             break;
         case std::future_status::timeout:
-            std::async(std::launch::async, signal, &monitor); // Temporary destructor will wait for signal to finish
+            // Temporary destructor will wait for signal to finish
+            std::async(std::launch::async, signal, &monitor);
             break;
         default:
             print_test_result(result, "test_notify_one()");
@@ -93,7 +94,7 @@ namespace
         wait_results.push_back(std::async(std::launch::async, wait, &monitor));
         wait_results.push_back(std::async(std::launch::async, wait, &monitor));
         wait_results.push_back(std::async(std::launch::async, wait, &monitor));
-    
+
         std::future_status wait_status = wait_results[0].wait_for(std::chrono::seconds(1));
         switch (wait_status)
         {
@@ -107,7 +108,12 @@ namespace
             return result;
         }
 
-        result = std::accumulate(wait_results.begin(), wait_results.end(), 0, [](int a, std::future<int>& f) {return a + f.get(); });
+        result = std::accumulate(
+            wait_results.begin(),
+            wait_results.end(),
+            0,
+            [](int a, std::future<int>& f) {return a + f.get(); }
+        );
         print_test_result(result, "test_notify_all()");
         return result;
     }
