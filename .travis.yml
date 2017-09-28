@@ -34,4 +34,5 @@ script:
   - $CXX --version
   - cmake --version
   - cmake .
-  - make -j 2
+  - make -j2
+  - ctest -j2

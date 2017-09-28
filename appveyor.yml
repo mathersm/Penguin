@@ -9,8 +9,8 @@ clone_depth: 10
 
 install:
   - set PENGUIN_ROOT=%CD%
-  - set PATH=%PENGUIN_ROOT%\lib:%PATH%
-  - set PATH=%PENGUIN_ROOT%\bin:%PATH%
+  - set PATH=%PENGUIN_ROOT%\lib;%PATH%
+  - set PATH=%PENGUIN_ROOT%\bin;%PATH%
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" amd64
   - msbuild /version
   - cmake --version
@@ -28,4 +28,5 @@ build:
   parallel: true
   verbosity: minimal
 
-test: off
+test_script:
+ - cmd: ctest -C %CONFIGURATION%
