@@ -5,13 +5,19 @@ language: cpp
 os:
   - linux
 
+compiler:
+  - gcc
+  - clang
+
 addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
+      - llvm-toolchain-precise-3.9
     packages:
       - cmake
       - g++-6
+      - clang++-3.9
 
 env:
   global:
@@ -31,12 +37,6 @@ matrix:
       env: COMPILER=g++-6
 
     - compiler: clang
-      addons:
-        apt:
-          sources:
-            - llvm-toolchain-precise-3.9
-          packages:
-            - clang++-3.9
       env: COMPILER=clang++
 
 
