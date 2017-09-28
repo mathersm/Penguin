@@ -34,9 +34,8 @@ namespace
         {
             return queue->try_pop_for(std::chrono::seconds(3));
         }
-        catch (const Penguin::Timeout_Exception& ex)
+        catch (const Penguin::Timeout_Exception&)
         {
-            ex;
             return -1;
         }
     }
@@ -48,9 +47,8 @@ namespace
         {
             return queue->try_pop_until(std::chrono::system_clock::now() + std::chrono::seconds(3));
         }
-        catch (const Penguin::Timeout_Exception& ex)
+        catch (const Penguin::Timeout_Exception&)
         {
-            ex;
             return -1;
         }
     }
