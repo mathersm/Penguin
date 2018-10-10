@@ -5,12 +5,12 @@
 #define PENGUIN_VERSION_H
 
 
-#include "Language.h"
+#include <string_view>
 
 
 namespace Penguin
 {
-    constexpr string_view PENGUIN_VERSION("0.1.0", 5);
+    constexpr std::string_view PENGUIN_VERSION("0.1.0", 5);
     constexpr long PENGUIN_MAJOR_VERSION = 0;
     constexpr long PENGUIN_MINOR_VERSION = 1;
     constexpr long PENGUIN_PATCH_VERSION = 0;
