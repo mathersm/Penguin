@@ -11,7 +11,7 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - cmake
-	  - g++-8
+	  - g++-7
 
 env:
   global:
@@ -27,7 +27,7 @@ branches:
 matrix:
   include:
     - compiler: gcc
-      env: COMPILER=g++-8
+      env: COMPILER=g++-7
 
     - compiler: clang
       env: COMPILER=clang++-7
