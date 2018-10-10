@@ -5,7 +5,7 @@ branches:
 
 os: Visual Studio 2017
 
-clone_depth: 10
+clone_depth: 1
 
 install:
   - set PENGUIN_ROOT=%CD%
