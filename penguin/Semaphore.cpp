@@ -5,6 +5,7 @@
 
 namespace Penguin
 {
+    constexpr
     Semaphore::Semaphore(long permits)
         : permits_(permits)
         , waiters_(0)
