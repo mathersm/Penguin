@@ -1,5 +1,5 @@
 sudo: false
-group: travis_latest
+
 language: cpp
 
 os:
@@ -11,7 +11,7 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - cmake
-	  - g++-7
+      - g++-7
 
 env:
   global:
