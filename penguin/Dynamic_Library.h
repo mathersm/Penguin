@@ -1,0 +1,38 @@
+/*
+ * Copyright (c) 2018 Michael Mathers
+ */
+#ifndef PENGUIN_DYNAMIC_LIBRARY_H
+#define PENGUIN_DYNAMIC_LIBRARY_H
+
+
+#include "Penguin_export.h"
+#include <string>
+
+
+#if defined(__GNUG__) 
+# include <dlfcn.h>
+#elif defined(_MSC_VER) 
+# ifndef WIN32_LEAN_AND_MEAN
+# define WIN32_LEAN_AND_MEAN
+# endif
+# include <Windows.h>
+#endif 
+
+
+namespace Penguin
+{
+#if defined(__GNUG__) 
+    using Library_Handle    = *void;
+    using Function_Address  = *void;
+#elif defined(_MSC_VER) 
+    using Library_Handle    = HMODULE;
+    using Function_Address  = FARPROC;
+#endif 
+
+
+    Penguin_Export Function_Address    get_library_function(const Library_Handle& library_handle, const std::string& function_name);
+    Penguin_Export Library_Handle      load_library(const std::string& library_path); 
+}
+
+
+#endif // PENGUIN_DYNAMIC_LIBRARY_H

@@ -1,5 +1,7 @@
 # Create a library
 add_library (Penguin SHARED
+    Dynamic_Library.cpp
+    Dynamic_Library.h
     Exception.cpp
     Exception.h
     Monitor.cpp
