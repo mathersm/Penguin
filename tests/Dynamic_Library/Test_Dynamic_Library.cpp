@@ -17,10 +17,14 @@ namespace
     int test_load_library(void)
     {
         int result = 0;
-        
-        // Penguin::load_library("test");
 
-        print_test_result(result, "test_load()");
+        std::stringstream library_name_stream;
+        library_name_stream << "Penguin" << "." << Penguin::dynamic_library_extension;
+
+        result |= (NULL == Penguin::load_library(library_name_stream.str()));
+        result |= (NULL == Penguin::load_library("Penguin"));
+
+        print_test_result(result, "test_load_library()");
         return result;
     }
 
@@ -29,9 +33,11 @@ namespace
     {
         int result = 0;
 
-        // Penguin::get_function("Penguin", "Test");
+        Penguin::Library_Handle library_handle = Penguin::load_library("Penguin");
+        
+        result |= (NULL == Penguin::get_library_function(library_handle, "test_library_function"));
 
-        print_test_result(result, "test_load()");
+        print_test_result(result, "test_find_function()");
         return result;
     }
 }
@@ -39,7 +45,7 @@ namespace
 
 int main(int argc, char *argv[])
 {
-    std::cout << "Test_Version" << std::endl;
+    std::cout << "Test_Dynamic_Library" << std::endl;
     int result = 0;
     result |= test_load_library();
     result |= test_find_function();

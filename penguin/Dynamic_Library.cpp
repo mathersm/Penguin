@@ -23,6 +23,7 @@ namespace
 #elif defined(_MSC_VER) 
     FARPROC get_library_function_windows(const HMODULE& library_handle, const std::string& function_name)
     {
+        
         FARPROC function_address = GetProcAddress(library_handle, function_name.c_str());
         if (function_address == NULL)
         {
@@ -54,17 +55,28 @@ namespace
         return module_handle;
     }
 #endif
+
+
+    std::string check_dynamic_library_path(std::filesystem::path library_path)
+    {
+        if (library_path.has_extension() == false || library_path.extension().string().compare(Penguin::dynamic_library_extension) == 0)
+        {
+            // If there is either no extension, or an incorrect one, replace it
+            library_path.replace_extension(Penguin::dynamic_library_extension);
+        }
+        return library_path.string();
+    }
 }
 
 
 namespace Penguin
 {
-    Library_Handle load_library(const std::string& library_path)
+    Library_Handle load_library(const std::filesystem::path& library_path)
     {
 #if defined(__GNUG__) 
-        return load_library_linux(library_path);
+        return load_library_linux(check_dynamic_library_path(library_path));
 #elif defined(_MSC_VER) 
-        return load_library_windows(library_path);
+        return load_library_windows(check_dynamic_library_path(library_path));
 #endif
     }
 
@@ -76,5 +88,11 @@ namespace Penguin
 #elif defined(_MSC_VER) 
         return get_library_function_windows(library_handle, function_name);
 #endif
+    }
+
+
+    int test_library_function(void)
+    {
+        return 1;
     }
 }
