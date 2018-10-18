@@ -8,7 +8,7 @@
 namespace
 {
 #if defined(__GNUG__) 
-    void* get_library_function_linux(const void*& library_handle, const std::string& function_name)
+    void* get_library_function_linux(void* library_handle, const std::string& function_name)
     {
         // Call dlError to clear any old error conditions
         dlError();
@@ -21,9 +21,9 @@ namespace
         return function_address;
     }
 #elif defined(_MSC_VER) 
-    FARPROC get_library_function_windows(const HMODULE& library_handle, const std::string& function_name)
+    FARPROC get_library_function_windows(HMODULE library_handle, const std::string& function_name)
     {
-        
+
         FARPROC function_address = GetProcAddress(library_handle, function_name.c_str());
         if (function_address == NULL)
         {
@@ -40,7 +40,7 @@ namespace
         void* handle = dlopen(library_path.c_str(), RTLD_LAZY);
         if (handle == NULL)
         {
-            std::cerr << "ERROR! Failed to load library " << library_path.c_str() << " - " << dlError() << '\n';
+            std::cerr << "ERROR! Failed to load library " << library_path.c_str() << " - " << dlerror() << '\n';
         }
         return handle;
     }
@@ -57,7 +57,7 @@ namespace
 #endif
 
 
-    std::string check_dynamic_library_path(std::filesystem::path library_path)
+    std::string fix_dynamic_library_path(std::filesystem::path library_path)
     {
         if (library_path.has_extension() == false || library_path.extension().string().compare(Penguin::dynamic_library_extension) == 0)
         {
@@ -74,14 +74,14 @@ namespace Penguin
     Library_Handle load_library(const std::filesystem::path& library_path)
     {
 #if defined(__GNUG__) 
-        return load_library_linux(check_dynamic_library_path(library_path));
+        return load_library_linux(fix_dynamic_library_path(library_path));
 #elif defined(_MSC_VER) 
-        return load_library_windows(check_dynamic_library_path(library_path));
+        return load_library_windows(fix_dynamic_library_path(library_path));
 #endif
     }
 
 
-    Function_Address get_library_function(const Library_Handle& library_handle, const std::string& function_name)
+    Function_Address get_library_function(Library_Handle library_handle, const std::string& function_name)
     {
 #if defined(__GNUG__) 
         return get_library_function_linux(library_handle, function_name);
