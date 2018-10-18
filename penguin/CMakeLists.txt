@@ -36,7 +36,8 @@ if (UNIX)
 target_link_libraries(
     Penguin
     LINK_PUBLIC
-      pthread
       dl
+      pthread
+      stdc++fs
 )
 endif (UNIX)

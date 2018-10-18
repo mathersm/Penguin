@@ -57,7 +57,7 @@ namespace
 #endif
 
 
-    std::string fix_dynamic_library_path(std::filesystem::path library_path)
+    std::string fix_dynamic_library_extension(std::filesystem::path library_path)
     {
         if (library_path.has_extension() == false || library_path.extension().string().compare(Penguin::dynamic_library_extension) == 0)
         {
@@ -74,9 +74,9 @@ namespace Penguin
     Library_Handle load_library(const std::filesystem::path& library_path)
     {
 #if defined(__GNUG__) 
-        return load_library_linux(fix_dynamic_library_path(library_path));
+        return load_library_linux(fix_dynamic_library_extension(library_path));
 #elif defined(_MSC_VER) 
-        return load_library_windows(fix_dynamic_library_path(library_path));
+        return load_library_windows(fix_dynamic_library_extension(library_path));
 #endif
     }
 
