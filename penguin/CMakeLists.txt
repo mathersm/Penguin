@@ -1,5 +1,7 @@
 # Create a library
 add_library (Penguin SHARED
+    Dynamic_Library.cpp
+    Dynamic_Library.h
     Exception.cpp
     Exception.h
     Monitor.cpp
@@ -31,5 +33,11 @@ generate_export_header(Penguin
     STATIC_DEFINE Penguin_BUILT_AS_STATIC)
 
 if (UNIX)
-target_link_libraries(Penguin pthread)
+target_link_libraries(
+    Penguin
+    LINK_PUBLIC
+      dl
+      pthread
+      stdc++fs
+)
 endif (UNIX)
