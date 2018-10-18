@@ -57,13 +57,21 @@ namespace
 #endif
 
 
-    std::string fix_dynamic_library_extension(std::filesystem::path library_path)
+    std::string fix_dynamic_library_filename(std::filesystem::path library_path)
     {
-        if (library_path.has_extension() == false || library_path.extension().string().compare(Penguin::dynamic_library_extension) == 0)
+        if (library_path.has_extension() == false || library_path.extension().string().compare(Penguin::dynamic_library_extension) != 0)
         {
             // If there is either no extension, or an incorrect one, replace it
             library_path.replace_extension(Penguin::dynamic_library_extension);
         }
+#if defined(__GNUG__)
+        if (library_path.filename().string().compare(0, 3, Penguin::dynamic_library_prefix) != 0)
+        {
+            std::string new_filename(Penguin::dynamic_library_prefix);
+            new_filename.append(library_path.filename().string());
+            library_path.replace_filename(new_filename);
+        }
+#endif
         return library_path.string();
     }
 }
@@ -74,9 +82,9 @@ namespace Penguin
     Library_Handle load_library(const std::filesystem::path& library_path)
     {
 #if defined(__GNUG__) 
-        return load_library_linux(fix_dynamic_library_extension(library_path));
+        return load_library_linux(fix_dynamic_library_filename(library_path));
 #elif defined(_MSC_VER) 
-        return load_library_windows(fix_dynamic_library_extension(library_path));
+        return load_library_windows(fix_dynamic_library_filename(library_path));
 #endif
     }
 

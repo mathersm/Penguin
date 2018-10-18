@@ -25,6 +25,7 @@ namespace Penguin
     using Library_Handle    = void*;
     using Function_Address  = void*;
     const std::string dynamic_library_extension("so");
+    const std::string dynamic_library_prefix("lib");
 #elif defined(_MSC_VER) 
     using Library_Handle    = HMODULE;
     using Function_Address  = FARPROC;
