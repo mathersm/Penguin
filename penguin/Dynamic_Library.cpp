@@ -13,7 +13,7 @@ namespace
         // Call dlerror to clear any old error conditions
         dlerror();
         void* function_address = dlsym(library_handle, function_name.c_str());
-        std::string error_string = dlerror();
+        std::string error_string(dlerror());
         if (error_string.empty())
         {
             std::cerr << "ERROR! Failed to find address for " << function_name.c_str() << " - " << error_string.c_str() << '\n';
