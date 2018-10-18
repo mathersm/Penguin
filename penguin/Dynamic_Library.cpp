@@ -10,8 +10,8 @@ namespace
 #if defined(__GNUG__) 
     void* get_library_function_linux(void* library_handle, const std::string& function_name)
     {
-        // Call dlError to clear any old error conditions
-        dlError();
+        // Call dlerror to clear any old error conditions
+        dlerror();
         void* function_address = dlsym(library_handle, function_name.c_str());
         std::string error_string = dlerror();
         if (error_string.empty())
