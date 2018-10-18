@@ -33,5 +33,10 @@ generate_export_header(Penguin
     STATIC_DEFINE Penguin_BUILT_AS_STATIC)
 
 if (UNIX)
-target_link_libraries(Penguin pthread)
+target_link_libraries(
+    Penguin
+    LINK_PUBLIC
+      pthread
+      dl
+)
 endif (UNIX)
