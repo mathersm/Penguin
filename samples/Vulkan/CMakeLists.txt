@@ -8,6 +8,12 @@ if (Vulkan_FOUND)
 
   add_dependencies (Sample_Vulkan Penguin)
 
+  target_include_directories(
+    Sample_Vulkan
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:.>
+  )
   include_directories(
     ${CMAKE_SOURCE_DIR}
     ${Vulkan_INCLUDE_DIRS}

@@ -9,7 +9,9 @@ find_path (
 find_library (
   Vulkan_LIBRARY
   NAMES vulkan-1
-  PATHS "$ENV{VK_SDK_PATH}/Bin"
+  PATHS 
+    "$ENV{VK_SDK_PATH}/Bin"
+    "$ENV{VK_SDK_PATH}/Lib"
   DOC "Vulkan library"
 )
 
