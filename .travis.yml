@@ -5,22 +5,11 @@ language: cpp
 os:
   - linux
 
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-      - llvm-toolchain-precise-3.9
-    packages:
-      - cmake
-      - g++-6
-      - clang++-3.9
-
 env:
   global:
     # Penguin settings
     - PENGUIN_ROOT=$TRAVIS_BUILD_DIR
     - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PENGUIN_ROOT/lib
-
 
 branches:
   only:
@@ -30,11 +19,29 @@ branches:
 matrix:
   include:
     - compiler: gcc
-      env: COMPILER=g++-6
+      env: COMPILER=g++-8
+      addons:
+        apt:
+         sources:
+          - ubuntu-toolchain-r-test
+         packages:
+          - g++-8
 
     - compiler: clang
-      env: COMPILER=clang++
+      env: COMPILER=clang++-7
+      addons:
+        apt:
+         sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-trusty-7
+         packages:
+          - g++-8
+          - clang-7
 
+addons:
+  apt:
+    packages:
+      - cmake
 
 script:
   - export CXX=${COMPILER}
