@@ -2,6 +2,7 @@
 * Copyright (c) 2018 Michael Mathers
 */
 #include "Test_Component.h"
+#include <iostream>
 
 
 namespace Test

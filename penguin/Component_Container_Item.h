@@ -28,7 +28,7 @@ namespace Penguin
         Component_Container_Item(const Component_Container_Item& other);
         Component_Container_Item(const std::filesystem::path& lib_path, const std::string& entry_func, const std::string& command_line);
 
-        Component_Container_Item::~Component_Container_Item(void);
+        ~Component_Container_Item(void);
 
         Component_Container_Item& operator = (const Component_Container_Item& other);
     };

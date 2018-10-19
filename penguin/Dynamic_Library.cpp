@@ -60,7 +60,7 @@ namespace
 #if defined(__GNUG__) 
     int unload_library_linux(void* library_handle)
     {
-        int result = dlclose(library_handle)
+        int result = dlclose(library_handle);
         if (result != 0)
         {
             std::cerr << "ERROR! Failed to unload library - " << dlerror() << '\n';
