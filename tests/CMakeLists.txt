@@ -1,4 +1,6 @@
 # Recurse into other subdirectories
+add_subdirectory(Component)
+add_subdirectory(Component_Container)
 add_subdirectory(Dynamic_Library)
 add_subdirectory(Monitor)
 add_subdirectory(Profiler)

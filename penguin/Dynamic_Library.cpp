@@ -57,6 +57,30 @@ namespace
 #endif
 
 
+#if defined(__GNUG__) 
+    int unload_library_linux(void* library_handle)
+    {
+        int result = dlclose(library_handle)
+        if (result != 0)
+        {
+            std::cerr << "ERROR! Failed to unload library - " << dlerror() << '\n';
+        }
+        return result;
+    }
+#elif defined(_MSC_VER) 
+    int unload_library_windows(HMODULE library_handle)
+    {
+        BOOL result = FreeLibrary(library_handle);
+        if (result == FALSE)
+        {
+            DWORD error = GetLastError();
+            std::cerr << "ERROR (" << GetLastError() << ")! - Failed to unload library!" << '\n';
+        }
+        return (result ? 0 : -1);
+    }
+#endif
+
+
     std::string fix_dynamic_library_filename(std::filesystem::path library_path)
     {
         if (library_path.has_extension() == false || library_path.extension().string().compare(Penguin::dynamic_library_extension) != 0)
@@ -79,7 +103,18 @@ namespace
 
 namespace Penguin
 {
-    Library_Handle load_library(const std::filesystem::path& library_path)
+    Function_Address
+    get_library_function(Library_Handle library_handle, const std::string& function_name)
+    {
+#if defined(__GNUG__) 
+        return get_library_function_linux(library_handle, function_name);
+#elif defined(_MSC_VER) 
+        return get_library_function_windows(library_handle, function_name);
+#endif
+    }
+
+    Library_Handle
+    load_library(const std::filesystem::path& library_path)
     {
 #if defined(__GNUG__) 
         return load_library_linux(fix_dynamic_library_filename(library_path));
@@ -89,12 +124,13 @@ namespace Penguin
     }
 
 
-    Function_Address get_library_function(Library_Handle library_handle, const std::string& function_name)
+    int
+    unload_library(Penguin::Library_Handle library_handle)
     {
-#if defined(__GNUG__) 
-        return get_library_function_linux(library_handle, function_name);
+#if defined(__GNUG__)
+        return unload_library_linux(library_handle);
 #elif defined(_MSC_VER) 
-        return get_library_function_windows(library_handle, function_name);
+        return unload_library_windows(library_handle);
 #endif
     }
 

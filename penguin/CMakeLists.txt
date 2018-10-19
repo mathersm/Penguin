@@ -1,5 +1,11 @@
 # Create a library
 add_library (Penguin SHARED
+    Component.cpp
+    Component.h
+    Component_Container.cpp
+    Component_Container.h
+    Component_Container_Item.cpp
+    Component_Container_Item.h
     Dynamic_Library.cpp
     Dynamic_Library.h
     Exception.cpp
