@@ -62,8 +62,24 @@ namespace
 
         std::future<int> wait_result = std::async(std::launch::async, wait, &monitor);
         std::future<int> signal_result = std::async(std::launch::async, signal, &monitor);
+        
+        std::future_status wait_status = wait_result.wait_for(std::chrono::seconds(1));
 
-        int result = wait_result.get();
+        int result = -1;
+        switch (wait_status)
+        {
+        case std::future_status::ready:
+            break;
+        case std::future_status::timeout:
+            // Temporary destructor will wait for signal to finish
+            std::async(std::launch::async, signal, &monitor);
+            break;
+        default:
+            print_test_result(result, "test_notify_one()");
+            return result;
+        }
+        
+        result = wait_result.get();
         print_test_result(result, "test_notify_one()");
         return result;
     }
@@ -72,14 +88,32 @@ namespace
     int test_notify_all(void)
     {
         Penguin::Monitor monitor;
+        int result = -1;
 
         std::vector<std::future<int>> wait_results;
         wait_results.push_back(std::async(std::launch::async, wait, &monitor));
         wait_results.push_back(std::async(std::launch::async, wait, &monitor));
         wait_results.push_back(std::async(std::launch::async, wait, &monitor));
-        std::future<int> broadcast_result = std::async(std::launch::async, broadcast, &monitor);
 
-        int result = std::accumulate(wait_results.begin(), wait_results.end(), 0, [](int a, std::future<int>& f) {return a + f.get(); });
+        std::future_status wait_status = wait_results[0].wait_for(std::chrono::seconds(1));
+        switch (wait_status)
+        {
+        case std::future_status::ready:
+            break;
+        case std::future_status::timeout:
+            std::async(std::launch::async, broadcast, &monitor);
+            break;
+        default:
+            print_test_result(result, "test_notify_all()");
+            return result;
+        }
+
+        result = std::accumulate(
+            wait_results.begin(),
+            wait_results.end(),
+            0,
+            [](int a, std::future<int>& f) {return a + f.get(); }
+        );
         print_test_result(result, "test_notify_all()");
         return result;
     }

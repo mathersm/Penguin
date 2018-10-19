@@ -12,3 +12,7 @@ include_directories(${CMAKE_SOURCE_DIR})
 link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 target_link_libraries (Test_Unbounded_Queue LINK_PUBLIC Penguin)
 
+add_test (
+    NAME Test_Unbounded_Queue
+    COMMAND Test_Unbounded_Queue
+)

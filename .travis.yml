@@ -5,33 +5,48 @@ language: cpp
 os:
   - linux
 
-compiler:
-  - gcc
-
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - cmake
-      - g++-6
-
 env:
   global:
     # Penguin settings
     - PENGUIN_ROOT=$TRAVIS_BUILD_DIR
     - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PENGUIN_ROOT/lib
 
-
 branches:
   only:
     - develop
     - master
 
+matrix:
+  include:
+    - compiler: gcc
+      env: COMPILER=g++-8
+      addons:
+        apt:
+         sources:
+          - ubuntu-toolchain-r-test
+         packages:
+          - g++-8
+
+    - compiler: clang
+      env: COMPILER=clang++-7
+      addons:
+        apt:
+         sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-trusty-7
+         packages:
+          - g++-8
+          - clang-7
+
+addons:
+  apt:
+    packages:
+      - cmake
 
 script:
-  - export CXX=g++-6
+  - export CXX=${COMPILER}
   - $CXX --version
   - cmake --version
   - cmake .
-  - make -j 2
+  - make -j2
+  - ctest -j2

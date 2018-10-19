@@ -12,3 +12,8 @@ include_directories(${CMAKE_SOURCE_DIR})
 link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 target_link_libraries (Test_Semaphore LINK_PUBLIC Penguin)
 
+add_test (
+    NAME Test_Semaphore
+    COMMAND Test_Semaphore
+)
+
