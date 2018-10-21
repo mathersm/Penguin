@@ -29,6 +29,56 @@ namespace Penguin::Sample
         this->set_vulkan_device_layers();
         this->set_vulkan_device_extensions();
         this->create_vulkan_logical_device();
+        this->get_vulkan_graphics_queue();
+        this->create_vulkan_command_pool();
+        this->create_vulkan_command_buffers();
+    }
+
+
+    void
+    Application::create_vulkan_command_buffers(void)
+    {
+        /*
+        Host access to command buffers must be externally synchronized.
+
+        [Vulkan 1.1.88 Specification - Section 5.3 - Command Buffer Allocation and Management]
+        */
+        std::lock_guard<std::mutex> command_pool_guard(this->vulkan_command_pool_.mutex);
+
+        vk::CommandBufferAllocateInfo buffer_allocation_info;
+        buffer_allocation_info.commandBufferCount = 1;
+        buffer_allocation_info.commandPool = this->vulkan_command_pool_.synced_object;
+        buffer_allocation_info.level = vk::CommandBufferLevel::ePrimary;
+
+        {
+            std::scoped_lock guard(this->vulkan_logical_device_.mutex, this->vulkan_command_buffers_.mutex);
+            this->vulkan_command_buffers_.synced_object = this->vulkan_logical_device_.synced_object.allocateCommandBuffers(buffer_allocation_info);
+        }
+    }
+
+
+    void
+    Application::create_vulkan_command_pool(void)
+    {
+        /*
+        Command pools are opaque objects that command buffer memory is allocated
+        from, and which allow the implementation to amortize the cost of resource
+        creation across multiple command buffers. Command pools are externally
+        synchronized, meaning that a command pool must not be used concurrently
+        in multiple threads. That includes use via recording commands on any
+        command buffers allocated from the pool, as well as operations that
+        allocate, free, and reset command buffers or the pool itself.
+
+        Host access to command pools must be externally synchronized.
+
+        [Vulkan 1.1.88 Specification - Section 5.2 - Command Pools]
+        */
+        vk::CommandPoolCreateInfo pool_info;
+        pool_info.queueFamilyIndex = this->vulkan_queue_family_index_;
+        pool_info.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
+
+        std::scoped_lock sync_guard(this->vulkan_logical_device_.mutex, this->vulkan_command_pool_.mutex);
+        this->vulkan_command_pool_.synced_object = this->vulkan_logical_device_.synced_object.createCommandPool(pool_info);
     }
 
 
@@ -64,8 +114,8 @@ namespace Penguin::Sample
         instance_info.enabledExtensionCount = static_cast<uint32_t>(this->vulkan_instance_extensions_.size());
         instance_info.ppEnabledExtensionNames = this->vulkan_instance_extensions_.data();
 
-        std::lock_guard<std::mutex> instance_guard(this->vulkan_instance_mutex_);
-        this->vulkan_instance_ = vk::createInstance(instance_info);
+        std::lock_guard<std::mutex> instance_guard(this->vulkan_instance_.mutex);
+        this->vulkan_instance_.synced_object = vk::createInstance(instance_info);
     }
 
 
@@ -77,6 +127,8 @@ namespace Penguin::Sample
         device. The queues to create are described by a set of
         VkDeviceQueueCreateInfo structures that are passed to vkCreateDevice in
         pQueueCreateInfos.
+
+        Host access to logical devices must be externally synchronized.
 
         [Vulkan 1.1 Specification - Section 4.3.2 - Queue Creation]
         */
@@ -95,7 +147,8 @@ namespace Penguin::Sample
         device_creation_info.queueCreateInfoCount = 1;
         device_creation_info.pQueueCreateInfos = &queue_creation_info;
 
-        this->vulkan_logical_device_ = this->vulkan_physical_device_.createDevice(device_creation_info);
+        std::lock_guard<std::mutex> logical_device_guard(this->vulkan_logical_device_.mutex);
+        this->vulkan_logical_device_.synced_object = this->vulkan_physical_device_.createDevice(device_creation_info);
     }
 
 
@@ -113,8 +166,8 @@ namespace Penguin::Sample
 
         std::vector<vk::PhysicalDevice> physical_devices;
         {
-            std::lock_guard<std::mutex> instance_guard(this->vulkan_instance_mutex_);
-            physical_devices = this->vulkan_instance_.enumeratePhysicalDevices();
+            std::lock_guard<std::mutex> instance_guard(this->vulkan_instance_.mutex);
+            physical_devices = this->vulkan_instance_.synced_object.enumeratePhysicalDevices();
         }
 
         for (const auto& device : physical_devices)
@@ -148,6 +201,14 @@ namespace Penguin::Sample
         }
 
         throw std::runtime_error("No suitable physical device found");
+    }
+
+
+    void
+    Application::get_vulkan_graphics_queue(void)
+    {
+        std::lock_guard<std::mutex> logical_device_guard(this->vulkan_logical_device_.mutex);
+        this->vulkan_graphics_queue_ = this->vulkan_logical_device_.synced_object.getQueue(this->vulkan_queue_family_index_, 0);
     }
 
 

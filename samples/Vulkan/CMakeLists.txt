@@ -6,6 +6,7 @@ if (Vulkan_FOUND)
   add_executable (Sample_Vulkan
     Application.cpp
     Application.h
+    Host_Synchronized.h
     Sample_Vulkan.cpp)
 
   add_dependencies (Sample_Vulkan Penguin)
