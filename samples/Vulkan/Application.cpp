@@ -6,6 +6,17 @@
 #include <iostream>
 
 
+namespace
+{
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+    LRESULT CALLBACK window_event_handler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+    {
+        return DefWindowProc(hwnd, msg, wparam, lparam);
+    }
+#endif
+}
+
+
 namespace Penguin::Sample
 {
     Application::Application(void)
@@ -25,6 +36,7 @@ namespace Penguin::Sample
         this->set_vulkan_instance_extensions();
         this->create_vulkan_instance();
         this->create_vulkan_physical_device();
+        this->create_presentation_surface();
         this->set_vulkan_queue_family();
         this->set_vulkan_device_layers();
         this->set_vulkan_device_extensions();
@@ -32,6 +44,66 @@ namespace Penguin::Sample
         this->get_vulkan_graphics_queue();
         this->create_vulkan_command_pool();
         this->create_vulkan_command_buffers();
+    }
+
+
+    void
+    Application::create_presentation_surface(void)
+    {
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+        HINSTANCE instance_handle = GetModuleHandle(NULL);
+
+        std::string window_class_name("Sample App Window");
+
+        WNDCLASSEX window_class = {};
+        window_class.cbSize = sizeof(WNDCLASSEX);
+        window_class.lpfnWndProc = window_event_handler;
+        window_class.hInstance = instance_handle;
+        window_class.hbrBackground = static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH));
+        window_class.lpszClassName = window_class_name.c_str();
+        
+        if (!RegisterClassEx(&window_class))
+        {
+            std::stringstream error_stream;
+            error_stream << "Failed to register window class (" << GetLastError() << ")";
+            throw std::runtime_error(error_stream.str());
+        }
+        
+        HWND window_handle = CreateWindowEx
+        (
+            0,
+            window_class_name.c_str(),
+            "Presentation Window",
+            WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+            100, 100,
+            800, 600,
+            NULL,
+            NULL,
+            instance_handle,
+            NULL
+        );
+
+        if (window_handle == 0)
+        {
+            std::stringstream error_stream;
+            error_stream << "Failed to create window (" << GetLastError() << ")";
+            throw std::runtime_error(error_stream.str());
+        }
+
+        vk::Win32SurfaceCreateInfoKHR surface_creation_info;
+        surface_creation_info.hinstance = instance_handle;
+        surface_creation_info.hwnd = window_handle;
+
+        {
+            std::lock_guard<std::mutex> instance_guard(this->vulkan_instance_.mutex);
+            this->presentation_surface_ = this->vulkan_instance_.synced_object.createWin32SurfaceKHR(surface_creation_info);
+        }
+
+        ShowWindow(window_handle, SW_SHOW);
+
+#else
+#error("No implementation available other than for Windows")
+#endif
     }
 
 
@@ -278,6 +350,16 @@ namespace Penguin::Sample
          */
 
         this->vulkan_instance_extensions_.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        this->vulkan_instance_extensions_.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+        this->vulkan_instance_extensions_.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+#elif defined(VK_USE_PLATFORM_XLIB_KHR)
+        this->vulkan_instance_extensions_.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
+#elif defined(VK_USE_PLATFORM_XCB_KHR)
+        this->vulkan_instance_extensions_.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+#else
+# error("Unknown Window System Integration(WSI)")
+#endif
     
         auto available_extensions = vk::enumerateInstanceExtensionProperties();
 
@@ -322,8 +404,13 @@ namespace Penguin::Sample
             if ((queue_family_properties[index].queueFlags & vk::QueueFlagBits::eGraphics) &&
                 queue_family_properties[index].queueCount > 0)
             {
-                this->vulkan_queue_family_index_ = index;
-                return;
+                vk::Bool32 presentation_supported = VK_FALSE;
+                vkGetPhysicalDeviceSurfaceSupportKHR(this->vulkan_physical_device_, index, this->presentation_surface_, &presentation_supported);
+                if (presentation_supported == VK_TRUE)
+                {
+                    this->vulkan_queue_family_index_ = index;
+                    return;
+                }
             }
         }
 

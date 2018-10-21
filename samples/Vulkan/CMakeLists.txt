@@ -7,7 +7,9 @@ if (Vulkan_FOUND)
     Application.cpp
     Application.h
     Host_Synchronized.h
-    Sample_Vulkan.cpp)
+    Sample_Vulkan.cpp
+    Vulkan_Config.h
+  )
 
   add_dependencies (Sample_Vulkan Penguin)
 

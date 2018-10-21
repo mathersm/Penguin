@@ -6,7 +6,7 @@
 
 
 #include "Host_Synchronized.h"
-#include <vulkan/vulkan.hpp>
+#include "Vulkan_Config.h"
 #include <mutex>
 #include <string>
 #include <vector>
@@ -29,6 +29,7 @@ namespace Penguin::Sample
         Application& operator = (const Application&) = delete;
 
     private:
+        void create_presentation_surface(void);
         void create_vulkan_command_buffers(void);
         void create_vulkan_command_pool(void);
         void create_vulkan_instance(void);
@@ -53,7 +54,7 @@ namespace Penguin::Sample
         vk::Queue vulkan_graphics_queue_;
         Penguin::Sample::Host_Synchronized<vk::CommandPool> vulkan_command_pool_;
         Penguin::Sample::Host_Synchronized<std::vector<vk::CommandBuffer>> vulkan_command_buffers_;
-        
+        vk::SurfaceKHR presentation_surface_;
     };
 }
 
