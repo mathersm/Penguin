@@ -33,6 +33,7 @@ namespace Penguin::Sample
         void set_vulkan_device_extensions(void);
         void set_vulkan_device_layers(void);
         void set_vulkan_instance_extensions(void);
+        void set_vulkan_queue_family(void);
         void set_vulkan_validation_layers(void);
 
     private:
@@ -41,6 +42,7 @@ namespace Penguin::Sample
         std::mutex vulkan_instance_mutex_;
         vk::Instance vulkan_instance_;
         vk::PhysicalDevice vulkan_physical_device_;
+        uint32_t vulkan_queue_family_index_;
         std::vector<const char*> vulkan_device_layers_;
         std::vector<const char*> vulkan_device_extensions_;
         vk::Device vulkan_logical_device_;

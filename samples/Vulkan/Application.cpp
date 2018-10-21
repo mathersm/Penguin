@@ -25,6 +25,7 @@ namespace Penguin::Sample
         this->set_vulkan_instance_extensions();
         this->create_vulkan_instance();
         this->create_vulkan_physical_device();
+        this->set_vulkan_queue_family();
         this->set_vulkan_device_layers();
         this->set_vulkan_device_extensions();
         this->create_vulkan_logical_device();
@@ -72,25 +73,6 @@ namespace Penguin::Sample
     Application::create_vulkan_logical_device(void)
     {
         /*
-        As discussed in the Physical Device Enumeration section above, the
-        vkGetPhysicalDeviceQueueFamilyProperties command is used to retrieve
-        details about the queue families and queues supported by a device.
-
-        Each index in the pQueueFamilyProperties array returned by
-        vkGetPhysicalDeviceQueueFamilyProperties describes a unique queue
-        family on that physical device. These indices are used when creating
-        queues, and they correspond directly with the queueFamilyIndex that is
-        passed to the vkCreateDevice command via the VkDeviceQueueCreateInfo
-        structure as described in the Queue Creation section below.
-
-        Grouping of queue families within a physical device is
-        implementation-dependent.
-
-        [Vulkan 1.1 Specification - Section 4.3.1 - Queue Family Properties]
-        */
-        auto queue_family_properties = this->vulkan_physical_device_.getQueueFamilyProperties();
-
-        /*
         Creating a logical device also creates the queues associated with that
         device. The queues to create are described by a set of
         VkDeviceQueueCreateInfo structures that are passed to vkCreateDevice in
@@ -103,7 +85,7 @@ namespace Penguin::Sample
         queue_creation_info.pNext = nullptr;
         queue_creation_info.pQueuePriorities = &queue_priority;
         queue_creation_info.queueCount = 1;
-        queue_creation_info.queueFamilyIndex = 0;
+        queue_creation_info.queueFamilyIndex = this->vulkan_queue_family_index_;
 
         vk::DeviceCreateInfo device_creation_info;
         device_creation_info.enabledLayerCount = static_cast<uint32_t>(this->vulkan_device_layers_.size());
@@ -249,6 +231,42 @@ namespace Penguin::Sample
                 throw std::runtime_error(error_stream.str().c_str());
             }
         }
+    }
+
+
+    void
+    Application::set_vulkan_queue_family(void)
+    {
+        /*
+        As discussed in the Physical Device Enumeration section above, the
+        vkGetPhysicalDeviceQueueFamilyProperties command is used to retrieve
+        details about the queue families and queues supported by a device.
+
+        Each index in the pQueueFamilyProperties array returned by
+        vkGetPhysicalDeviceQueueFamilyProperties describes a unique queue
+        family on that physical device. These indices are used when creating
+        queues, and they correspond directly with the queueFamilyIndex that is
+        passed to the vkCreateDevice command via the VkDeviceQueueCreateInfo
+        structure as described in the Queue Creation section below.
+
+        Grouping of queue families within a physical device is
+        implementation-dependent.
+
+        [Vulkan 1.1 Specification - Section 4.3.1 - Queue Family Properties]
+        */
+        auto queue_family_properties = this->vulkan_physical_device_.getQueueFamilyProperties();
+
+        for (uint32_t index = 0; index < queue_family_properties.size(); ++index)
+        {
+            if ((queue_family_properties[index].queueFlags & vk::QueueFlagBits::eGraphics) &&
+                queue_family_properties[index].queueCount > 0)
+            {
+                this->vulkan_queue_family_index_ = index;
+                return;
+            }
+        }
+
+        throw std::runtime_error("Unable to find suitable queue family");
     }
 
 
