@@ -9,13 +9,13 @@
 namespace
 {
     template <typename STREAM, typename T>
-    void stream_out(STREAM& stream, T output)
+    void stream_out(STREAM& stream, const T& output)
     {
         stream << output;
     }
 
     template <typename STREAM, typename T, typename ...U>
-    void stream_out(STREAM& stream, T output, U... more_output)
+    void stream_out(STREAM& stream, const T& output, const U&... more_output)
     {
         stream << output;
         return stream_out(stream, more_output...);
