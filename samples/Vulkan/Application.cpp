@@ -37,11 +37,13 @@ namespace Penguin::Sample
         this->create_vulkan_instance();
         this->create_vulkan_physical_device();
         this->create_presentation_surface();
+        this->set_vulkan_presentation_mode();
         this->set_vulkan_queue_family();
         this->set_vulkan_device_layers();
         this->set_vulkan_device_extensions();
         this->create_vulkan_logical_device();
-        this->get_vulkan_graphics_queue();
+        this->create_vulkan_swapchain();
+        this->create_vulkan_graphics_queue();
         this->create_vulkan_command_pool();
         this->create_vulkan_command_buffers();
     }
@@ -151,6 +153,14 @@ namespace Penguin::Sample
 
         std::scoped_lock sync_guard(this->vulkan_logical_device_.mutex, this->vulkan_command_pool_.mutex);
         this->vulkan_command_pool_.synced_object = this->vulkan_logical_device_.synced_object.createCommandPool(pool_info);
+    }
+
+
+    void
+    Application::create_vulkan_graphics_queue(void)
+    {
+        std::lock_guard<std::mutex> logical_device_guard(this->vulkan_logical_device_.mutex);
+        this->vulkan_graphics_queue_ = this->vulkan_logical_device_.synced_object.getQueue(this->vulkan_queue_family_index_, 0);
     }
 
 
@@ -277,10 +287,201 @@ namespace Penguin::Sample
 
 
     void
-    Application::get_vulkan_graphics_queue(void)
+    Application::create_vulkan_swapchain(void)
     {
-        std::lock_guard<std::mutex> logical_device_guard(this->vulkan_logical_device_.mutex);
-        this->vulkan_graphics_queue_ = this->vulkan_logical_device_.synced_object.getQueue(this->vulkan_queue_family_index_, 0);
+        /*
+        A swapchain is an abstraction for an array of presentable images that
+        are associated with a surface. The presentable images are represented
+        by VkImage objects created by the platform. One image (which can be an
+        array image for multiview/stereoscopic-3D surfaces) is displayed at a
+        time, but multiple images can be queued for presentation. An
+        application renders to the image, and then queues the image for
+        presentation to the surface.
+
+        A native window cannot be associated with more than one non-retired
+        swapchain at a time. Further, swapchains cannot be created for native
+        windows that have a non-Vulkan graphics API surface associated with
+        them.
+
+        Note
+        - The presentation engine is an abstraction for the platform’s
+          compositor or display engine.
+        - The presentation engine may be synchronous or asynchronous with
+          respect to the application and/or logical device.
+        - Some implementations may use the device’s graphics queue or dedicated
+          presentation hardware to perform presentation.
+
+        The presentable images of a swapchain are owned by the presentation
+        engine. An application can acquire use of a presentable image from the
+        presentation engine. Use of a presentable image must occur only after
+        the image is returned by vkAcquireNextImageKHR, and before it is
+        presented by vkQueuePresentKHR. This includes transitioning the image
+        layout and rendering commands.
+
+        An application can acquire use of a presentable image with
+        vkAcquireNextImageKHR. After acquiring a presentable image and before
+        modifying it, the application must use a synchronization primitive to
+        ensure that the presentation engine has finished reading from the
+        image. The application can then transition the image’s layout, queue
+        rendering commands to it, etc. Finally, the application presents the
+        image with vkQueuePresentKHR, which releases the acquisition of the
+        image.
+
+        The presentation engine controls the order in which presentable images
+        are acquired for use by the application.
+
+        Note
+        - This allows the platform to handle situations which require
+          out-of-order return of images after presentation. At the same time,
+          it allows the application to generate command buffers referencing all
+          of the images in the swapchain at initialization time, rather than in
+          its main loop.
+
+        Host access to swapchain must be externally synchronized.
+
+        Vulkan 1.1 Specification - Section 31.8 - WSI Swapchain]
+        */
+
+        vk::SurfaceFormatKHR desired_format = { vk::Format::eR8G8B8A8Unorm, vk::ColorSpaceKHR::eSrgbNonlinear };
+        vk::SurfaceFormatKHR swapchain_format = this->get_vulkan_swapchain_format(desired_format);
+
+        vk::Extent2D desired_image_size = { 800, 600 };
+
+        vk::ImageUsageFlags desired_image_usages = vk::ImageUsageFlagBits::eColorAttachment;
+
+        vk::SurfaceTransformFlagBitsKHR desired_image_transform = vk::SurfaceTransformFlagBitsKHR::eIdentity;
+
+        vk::SwapchainCreateInfoKHR swapchain_creation_info;
+        swapchain_creation_info.flags = vk::SwapchainCreateFlagsKHR();
+        swapchain_creation_info.surface = this->presentation_surface_;
+        swapchain_creation_info.minImageCount = this->get_vulkan_swapchain_image_count();
+        swapchain_creation_info.imageFormat = swapchain_format.format;
+        swapchain_creation_info.imageColorSpace = swapchain_format.colorSpace;
+        swapchain_creation_info.imageExtent = this->get_vulkan_swapchain_image_size(desired_image_size);
+        swapchain_creation_info.imageArrayLayers = 1;
+        swapchain_creation_info.imageUsage = this->get_vulkan_swapchain_image_usages(desired_image_usages);
+        swapchain_creation_info.imageSharingMode = vk::SharingMode::eExclusive;
+        swapchain_creation_info.queueFamilyIndexCount = 0;
+        swapchain_creation_info.pQueueFamilyIndices = nullptr;
+        swapchain_creation_info.preTransform = this->get_vulkan_swapchain_image_transform(desired_image_transform);
+        swapchain_creation_info.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
+        swapchain_creation_info.presentMode = this->presentation_mode_;
+        swapchain_creation_info.clipped = VK_TRUE;
+        
+        {
+            std::scoped_lock guard(this->vulkan_logical_device_.mutex, this->vulkan_swapchain_.mutex);
+            swapchain_creation_info.oldSwapchain = this->vulkan_swapchain_.synced_object;
+
+            this->vulkan_swapchain_.synced_object = this->vulkan_logical_device_.synced_object.createSwapchainKHR(swapchain_creation_info);
+        }
+    }
+
+
+    vk::SurfaceFormatKHR
+    Application::get_vulkan_swapchain_format(const vk::SurfaceFormatKHR& desired_format) const
+    {
+        auto supported_formats = this->vulkan_physical_device_.getSurfaceFormatsKHR(this->presentation_surface_);
+
+        if (supported_formats.size() == 1 && supported_formats[0].format == vk::Format::eUndefined)
+        {
+            return desired_format;
+        }
+
+        auto find_result = std::find(supported_formats.begin(), supported_formats.end(), desired_format);
+        if (find_result != supported_formats.end())
+        {
+            return desired_format;
+        }
+
+        auto find_alternative = std::find_if(supported_formats.begin(), supported_formats.end(), [desired_format](const auto& format) { return desired_format.format == format.format; });
+        if (find_alternative != supported_formats.end())
+        {
+            std::cerr << "Desired swapchain format is not available, selecting alternative colour space = " << vk::to_string(find_alternative->colorSpace) << '\n';
+            return *find_alternative;
+        }
+
+        std::cerr << "Desired swapchain format is not available, selecting alternative format = " << vk::to_string(supported_formats[0].format) << ":" << vk::to_string(supported_formats[0].colorSpace) << '\n';
+        return supported_formats[0];
+    }
+
+
+    uint32_t
+    Application::get_vulkan_swapchain_image_count(void) const
+    {
+        vk::SurfaceCapabilitiesKHR surface_capabilites = this->vulkan_physical_device_.getSurfaceCapabilitiesKHR(this->presentation_surface_);
+
+        /*
+        maxImageCount is the maximum number of images the specified device
+        supports for a swapchain created for the surface, and will be either 0,
+        or greater than or equal to minImageCount. A value of 0 means that
+        there is no limit on the number of images, though there may be limits
+        related to the total amount of memory used by presentable images.
+
+        [Vulkan 1.1 Specification - Section 31.5 - Surface Queries]
+        */
+        uint32_t swapchain_image_count = surface_capabilites.minImageCount + 1;
+        if (surface_capabilites.maxImageCount > 0)
+        {
+            swapchain_image_count = std::min<uint32_t>(swapchain_image_count, surface_capabilites.maxImageCount);
+        }
+
+        return swapchain_image_count;
+    }
+
+
+    vk::Extent2D
+    Application::get_vulkan_swapchain_image_size(const vk::Extent2D& desired_image_size) const
+    {
+        vk::SurfaceCapabilitiesKHR surface_capabilites = this->vulkan_physical_device_.getSurfaceCapabilitiesKHR(this->presentation_surface_);
+        /*
+       currentExtent is the current width and height of the surface, or the
+       special value (0xFFFFFFFF, 0xFFFFFFFF) indicating that the surface size
+       will be determined by the extent of a swapchain targeting the surface.
+
+       [Vulkan 1.1 Specification - Section 31.5 - Surface Queries]
+       */
+        vk::Extent2D swapchain_image_size = desired_image_size;
+        
+        if (surface_capabilites.currentExtent.width == 0xFFFFFFFF)
+        {
+            swapchain_image_size.width = std::clamp(swapchain_image_size.width, surface_capabilites.minImageExtent.width, surface_capabilites.maxImageExtent.width);
+            swapchain_image_size.height = std::clamp(swapchain_image_size.height, surface_capabilites.minImageExtent.height, surface_capabilites.maxImageExtent.height);
+        }
+        else
+        {
+            swapchain_image_size = surface_capabilites.currentExtent;
+        }
+
+        return swapchain_image_size;
+    }
+
+
+    vk::SurfaceTransformFlagBitsKHR
+    Application::get_vulkan_swapchain_image_transform(const vk::SurfaceTransformFlagBitsKHR& desired_image_transform) const
+    {
+        vk::SurfaceCapabilitiesKHR surface_capabilites = this->vulkan_physical_device_.getSurfaceCapabilitiesKHR(this->presentation_surface_);
+
+        vk::SurfaceTransformFlagsKHR swapchain_image_transform = desired_image_transform & surface_capabilites.supportedTransforms;
+        if (vk::SurfaceTransformFlagsKHR(desired_image_transform) != swapchain_image_transform)
+        {
+            std::cerr << "Swapchain does not support image transform = " << vk::to_string(desired_image_transform) << '\n';
+            return surface_capabilites.currentTransform;
+        }
+        return desired_image_transform;
+    }
+
+
+    vk::ImageUsageFlags
+    Application::get_vulkan_swapchain_image_usages(const vk::ImageUsageFlags& desired_image_usages) const
+    {
+        vk::SurfaceCapabilitiesKHR surface_capabilites = this->vulkan_physical_device_.getSurfaceCapabilitiesKHR(this->presentation_surface_);
+
+        vk::ImageUsageFlags swapchain_image_usages = desired_image_usages & surface_capabilites.supportedUsageFlags;
+        if (desired_image_usages != swapchain_image_usages)
+        {
+            std::cerr << "Swapchain does not support image usage = " << vk::to_string(desired_image_usages ^ swapchain_image_usages) << '\n';
+        }
+        return swapchain_image_usages;
     }
 
 
@@ -314,7 +515,7 @@ namespace Penguin::Sample
     void
     Application::set_vulkan_device_layers(void)
     {
-        std::cout << "No device layers are being set" << '\n';
+        this->vulkan_device_extensions_.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
         auto available_device_layers = this->vulkan_physical_device_.enumerateDeviceLayerProperties();
 
@@ -378,6 +579,24 @@ namespace Penguin::Sample
 
 
     void
+    Application::set_vulkan_presentation_mode(void)
+    {
+        std::vector<vk::PresentModeKHR> presentation_modes = this->vulkan_physical_device_.getSurfacePresentModesKHR(this->presentation_surface_);
+
+        for (const auto& mode : presentation_modes)
+        {
+            if (mode == vk::PresentModeKHR::eFifo)
+            {
+                this->presentation_mode_ = mode;
+                return;
+            }
+        }
+
+        throw std::runtime_error("Unable to find a desirable presentation mode");
+    }
+
+
+    void
     Application::set_vulkan_queue_family(void)
     {
         /*
@@ -404,9 +623,7 @@ namespace Penguin::Sample
             if ((queue_family_properties[index].queueFlags & vk::QueueFlagBits::eGraphics) &&
                 queue_family_properties[index].queueCount > 0)
             {
-                vk::Bool32 presentation_supported = VK_FALSE;
-                vkGetPhysicalDeviceSurfaceSupportKHR(this->vulkan_physical_device_, index, this->presentation_surface_, &presentation_supported);
-                if (presentation_supported == VK_TRUE)
+                if (VK_TRUE == this->vulkan_physical_device_.getSurfaceSupportKHR(index, this->presentation_surface_))
                 {
                     this->vulkan_queue_family_index_ = index;
                     return;
