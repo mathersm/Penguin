@@ -15,22 +15,29 @@ namespace Penguin
     typedef Component* (*_component_entry_point)(const std::string);
 
 
-    struct Component_Container_Item
+    class Component_Container_Item
     {
-        std::filesystem::path       library_path;
-        std::string                 entry_function;
-        std::string                 command_line_args;
-        Penguin::Library_Handle     library_handle;
-        std::shared_ptr<Component>  component;
-
-        Component_Container_Item(void) = delete;
-
+    public:
+        Component_Container_Item(void);
         Component_Container_Item(const Component_Container_Item& other);
-        Component_Container_Item(const std::filesystem::path& lib_path, const std::string& entry_func, const std::string& command_line);
-
+        Component_Container_Item(Component_Container_Item&& other);
         ~Component_Container_Item(void);
 
         Component_Container_Item& operator = (const Component_Container_Item& other);
+        Component_Container_Item& operator = (Component_Container_Item&& other) noexcept;
+
+        std::filesystem::path       get_library_path(void) const;
+        std::string                 get_entry_function(void) const;
+        std::string                 get_command_line_args(void) const;
+        Penguin::Library_Handle     get_library_handle(void) const;
+        std::shared_ptr<Component>  get_component(void) const;
+
+    private:
+        std::filesystem::path       library_path_;
+        std::string                 entry_function_;
+        std::string                 command_line_args_;
+        Penguin::Library_Handle     library_handle_;
+        std::shared_ptr<Component>  component_;
     };
 
 }

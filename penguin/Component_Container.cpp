@@ -2,7 +2,6 @@
  * Copyright (c) 2018 Michael Mathers
  */
 #include "Component_Container.h"
-#include <iostream>
 
 
 namespace Penguin
@@ -12,52 +11,98 @@ namespace Penguin
     }
 
 
-    Component_Container::~Component_Container(void)
+    Component_Container::Component_Container(const Component_Container& other)
     {
-        this->component_map_.clear();
+        *this = other;
     }
 
 
-    int
-    Component_Container::load_component(const std::string& key, const std::filesystem::path& library_path, const std::string& entry_function, const std::string& command_line_args)
+    Component_Container::Component_Container(Component_Container&& other)
     {
-        // Check for the presence of the key first before attempting to construct a new container item
-        auto find_result = this->component_map_.find(key);
-        if (find_result == this->component_map_.end())
+        *this = std::move(other);
+    }
+
+
+    Component_Container::~Component_Container(void)
+    {
+        this->container_.clear();
+    }
+
+
+    Component_Container&
+    Component_Container::operator = (const Component_Container& other)
+    {
+        if (this != &other)
         {
-            auto insertion_result = this->component_map_.insert(std::make_pair(key, Penguin::Component_Container_Item(library_path, entry_function, command_line_args)));
-            if (insertion_result.second == false)
+            this->container_ = other.container_;
+        }
+        return *this;
+    }
+
+
+    Component_Container&
+    Component_Container::operator = (Component_Container&& other) noexcept
+    {
+        if (this != &other)
+        {
+            this->container_ = std::move(other.container_);
+        }
+        return *this;
+    }
+
+
+    Component_Container::Result
+    Component_Container::load_component(const std::string& key, const Component_Container_Item& component)
+    {
+        if (this->container_.find(key) == this->container_.end())
+        {
+            if (this->container_.insert(std::make_pair(key, component)).second == false)
             {
-                std::cerr   << "ERROR! - Component container could not construct new component with key = " << key.c_str()
-                            << ". Could not load " << library_path.c_str() << ":" << entry_function.c_str() << '\n';
-                return -1;
+                return Result::FAIL_CONTAINER_INSERTION_FAILED;
             }
             else
             {
-                return 0;
+                return Result::OK;
             }
         }
         else
         {
-            std::cerr   << "ERROR! - Component container already contains a component with key = " << key.c_str()
-                        << ". Could not load " << library_path.c_str() << ":" << entry_function.c_str() << '\n';
-            return -1;
+            return Result::FAIL_KEY_ALREADY_IN_USE;
         }
     }
 
 
-    int
-    Component_Container::unload_component(const std::string& key)
+    Component_Container::Result
+    Component_Container::load_component(std::string&& key, Component_Container_Item&& component)
     {
-        if (this->component_map_.erase(key) == 1)
+        if (this->container_.find(key) == this->container_.end())
         {
-            return 0;
+            if (this->container_.emplace(std::make_pair(key, component)).second == false)
+            {
+                return Result::FAIL_CONTAINER_INSERTION_FAILED;
+            }
+            else
+            {
+                return Result::OK;
+            }
         }
         else
         {
-            std::cerr << "ERROR! - Component container doesn't contain a component with key = " << key.c_str()
-                << ". Could not unload." << '\n';
-            return -1;
+            return Result::FAIL_KEY_ALREADY_IN_USE;
+        }
+    }
+
+
+    Component_Container::Result
+    Component_Container::unload_component(const std::string& key)
+    {
+        if (this->container_.erase(key) == 1)
+        {
+            return Result::OK;
+        }
+        else
+        {
+            return Result::FAIL_KEY_NOT_FOUND;
         }
     }
 }
