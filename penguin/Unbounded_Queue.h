@@ -5,7 +5,6 @@
 #define PENGUIN_UNBOUNDED_QUEUE_H
 
 
-#include "Exception.h"
 #include "Semaphore.h"
 #include <list>
 #include <optional>
