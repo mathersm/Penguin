@@ -2,6 +2,7 @@
 * Copyright (c) 2017 Michael Mathers
 */
 #include <penguin/Unbounded_Queue.h>
+#include <algorithm>
 #include <future>
 #include <iostream>
 #include <numeric>
