@@ -5,9 +5,9 @@
 #define PENGUIN_UNBOUNDED_QUEUE_H
 
 
-#include "Exception.h"
 #include "Semaphore.h"
 #include <list>
+#include <optional>
 
 
 namespace Penguin
@@ -19,6 +19,7 @@ namespace Penguin
         Unbounded_Queue(void);
         virtual ~Unbounded_Queue(void);
 
+    public:
         size_t size(void) const;
 
         void push(const T& value);
@@ -27,22 +28,21 @@ namespace Penguin
         T pop(void);
 
         template <class Rep, class Period>
-        T try_pop_for(const std::chrono::duration<Rep, Period>& rel_time);
+        std::optional<T> try_pop_for(const std::chrono::duration<Rep, Period>& rel_time);
 
         template <class Clock, class Duration>
-        T try_pop_until(const std::chrono::time_point<Clock, Duration>& timeout_time);
-
-    protected:
+        std::optional<T> try_pop_until(const std::chrono::time_point<Clock, Duration>& timeout_time);
 
     private:
-        Penguin::Semaphore  itemCount_;
-        std::list<T>        queue_;
-
         Unbounded_Queue(const Unbounded_Queue& other) = delete;
         Unbounded_Queue& operator = (const Unbounded_Queue& other) = delete;
 
         Unbounded_Queue(Unbounded_Queue&& other) = delete;
         Unbounded_Queue& operator = (Unbounded_Queue&& other) = delete;
+
+    private:
+        Penguin::Semaphore  itemCount_;
+        std::list<T>        queue_;
     };
 
 
@@ -109,7 +109,7 @@ namespace Penguin
 
     template <typename T>
     template <class Rep, class Period>
-    T
+    std::optional<T>
     Unbounded_Queue<T>::try_pop_for(const std::chrono::duration<Rep, Period>& rel_time)
     {
         PENGUIN_CORE_PROFILE(__FUNCTION__);
@@ -120,13 +120,13 @@ namespace Penguin
             this->queue_.pop_front();
             return value;
         }
-        throw Penguin::Timeout_Exception("Attempt to acquire Semaphore for Unbounded_Queue timed out");
+        return std::nullopt;
     }
 
 
     template <typename T>
     template <class Clock, class Duration>
-    T
+    std::optional<T>
     Unbounded_Queue<T>::try_pop_until(const std::chrono::time_point<Clock, Duration>& timeout_time)
     {
         PENGUIN_CORE_PROFILE(__FUNCTION__);
@@ -137,7 +137,7 @@ namespace Penguin
             this->queue_.pop_front();
             return value;
         }
-        throw Penguin::Timeout_Exception("Attempt to acquire Semaphore for Unbounded_Queue timed out");
+        return std::nullopt;
     }
 }
 
