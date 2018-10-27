@@ -8,13 +8,10 @@ add_library (Penguin SHARED
     Component_Container_Item.h
     Dynamic_Library.cpp
     Dynamic_Library.h
-    Exception.cpp
-    Exception.h
     Monitor.cpp
     Monitor.h
     Penguin_export.h
-    Profiler.cpp
-    Profiler.h
+    Scoped_Timer.h
     Semaphore.cpp
     Semaphore.h
     Unbounded_Queue.h
