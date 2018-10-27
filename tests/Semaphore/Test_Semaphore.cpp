@@ -5,6 +5,7 @@
 #include <future>
 #include <iostream>
 #include <numeric>
+#include <vector>
 
 
 namespace
