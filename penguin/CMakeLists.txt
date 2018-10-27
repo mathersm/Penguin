@@ -5,8 +5,7 @@ add_library (Penguin SHARED
     Monitor.cpp
     Monitor.h
     Penguin_export.h
-    Profiler.cpp
-    Profiler.h
+    Scoped_Timer.h
     Semaphore.cpp
     Semaphore.h
     Unbounded_Queue.h

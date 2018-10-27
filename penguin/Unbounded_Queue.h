@@ -50,14 +50,12 @@ namespace Penguin
     Unbounded_Queue<T>::Unbounded_Queue(void)
         : itemCount_(0)
     {
-        PENGUIN_CORE_PROFILE(__FUNCTION__);
     }
 
 
     template <typename T>
     Unbounded_Queue<T>::~Unbounded_Queue(void)
     {
-        PENGUIN_CORE_PROFILE(__FUNCTION__);
     }
 
 
@@ -65,8 +63,6 @@ namespace Penguin
     size_t
     Unbounded_Queue<T>::size(void) const
     {
-        PENGUIN_CORE_PROFILE(__FUNCTION__);
-
         assert(itemCount_.permits() == queue_.size());
         return itemCount_.permits();
     }
@@ -76,8 +72,6 @@ namespace Penguin
     void
     Unbounded_Queue<T>::push(const T& value)
     {
-        PENGUIN_CORE_PROFILE(__FUNCTION__);
-
         this->queue_.push_back(value);
         this->itemCount_.release();
     }
@@ -87,8 +81,6 @@ namespace Penguin
     void
     Unbounded_Queue<T>::push(T&& value)
     {
-        PENGUIN_CORE_PROFILE(__FUNCTION__);
-
         this->queue_.push_back(value);
         this->itemCount_.release();
     }
@@ -98,8 +90,6 @@ namespace Penguin
     T
     Unbounded_Queue<T>::pop(void)
     {
-        PENGUIN_CORE_PROFILE(__FUNCTION__);
-
         this->itemCount_.acquire();
         T value = this->queue_.front();
         this->queue_.pop_front();
@@ -112,8 +102,6 @@ namespace Penguin
     std::optional<T>
     Unbounded_Queue<T>::try_pop_for(const std::chrono::duration<Rep, Period>& rel_time)
     {
-        PENGUIN_CORE_PROFILE(__FUNCTION__);
-
         if (std::cv_status::no_timeout == this->itemCount_.try_acquire_for(rel_time))
         {
             T value = this->queue_.front();
@@ -129,8 +117,6 @@ namespace Penguin
     std::optional<T>
     Unbounded_Queue<T>::try_pop_until(const std::chrono::time_point<Clock, Duration>& timeout_time)
     {
-        PENGUIN_CORE_PROFILE(__FUNCTION__);
-
         if (std::cv_status::no_timeout == this->itemCount_.try_acquire_until(timeout_time))
         {
             T value = this->queue_.front();

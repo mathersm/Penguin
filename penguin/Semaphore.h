@@ -50,8 +50,6 @@ namespace Penguin
     std::cv_status
     Semaphore::try_acquire_for(const std::chrono::duration<Rep, Period>& rel_time)
     {
-        PENGUIN_CORE_PROFILE(__FUNCTION__);
-
         Penguin::Monitor::_guard_type permit_guard(this->permit_monitor_);
         this->waiters_.fetch_add(1);
         if (this->permits_.load() > 0)
@@ -77,8 +75,6 @@ namespace Penguin
     std::cv_status
     Semaphore::try_acquire_until(const std::chrono::time_point<Clock, Duration>& timeout_time)
     {
-        PENGUIN_CORE_PROFILE(__FUNCTION__);
-
         Penguin::Monitor::_guard_type permit_guard(this->permit_monitor_);
         this->waiters_.fetch_add(1);
         if (this->permits_.load() > 0)
