@@ -74,7 +74,7 @@ namespace
         if (result == FALSE)
         {
             DWORD error = GetLastError();
-            std::cerr << "ERROR (" << GetLastError() << ")! - Failed to unload library!" << '\n';
+            std::cerr << "ERROR (" << error << ")! - Failed to unload library!" << '\n';
         }
         return (result ? 0 : -1);
     }
@@ -134,9 +134,4 @@ namespace Penguin
 #endif
     }
 
-
-    int test_library_function(void)
-    {
-        return 1;
-    }
 }

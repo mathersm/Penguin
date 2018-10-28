@@ -36,10 +36,6 @@ namespace Penguin
     Penguin_Export Function_Address    get_library_function(Library_Handle library_handle, const std::string& function_name);
     Penguin_Export Library_Handle      load_library(const std::filesystem::path& library_path);
     Penguin_Export int                 unload_library(Library_Handle library_handle);
-
-
-    // Using C linkage here to provide a non-mangled name that can be found with a simplified look up
-    extern "C" Penguin_Export int       test_library_function(void);
 }
 
 

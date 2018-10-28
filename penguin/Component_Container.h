@@ -39,7 +39,6 @@ namespace Penguin
     public:
         Result load_component(const std::string& key, const Component_Container_Item& component);
         Result load_component(std::string&& key, Component_Container_Item&& component);
-
         Result unload_component(const std::string& key);
 
     
