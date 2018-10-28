@@ -32,15 +32,10 @@ namespace Penguin::Sample
     void
     Application::configure(void)
     {
-        this->set_vulkan_validation_layers();
-        this->set_vulkan_instance_extensions();
         this->create_vulkan_instance();
         this->create_vulkan_physical_device();
         this->create_presentation_surface();
-        this->set_vulkan_presentation_mode();
         this->set_vulkan_queue_family();
-        this->set_vulkan_device_layers();
-        this->set_vulkan_device_extensions();
         this->create_vulkan_logical_device();
         this->create_vulkan_swapchain();
         this->create_vulkan_graphics_queue();
@@ -176,9 +171,6 @@ namespace Penguin::Sample
 
         [Vulkan 1.0 Specification - Section 3.2 - Instances]
         */
-        const std::string application_name("Sample Application");
-        const std::string engine_name("Sample Engine");
-
         vk::ApplicationInfo app_info;
         app_info.apiVersion = VK_API_VERSION_1_1;
         app_info.applicationVersion = VK_MAKE_VERSION(0, 1, 0);
@@ -187,14 +179,17 @@ namespace Penguin::Sample
         app_info.pEngineName = engine_name.c_str();
         app_info.pNext = nullptr;
 
+        auto validation_layers = this->validate_vulkan_validation_layers(desired_validation_layers);
+        auto extensions = this->validate_vulkan_instance_extensions(desired_instance_extensions);
+
         vk::InstanceCreateInfo instance_info;
         instance_info.pNext = nullptr;
         instance_info.flags = vk::InstanceCreateFlags();
         instance_info.pApplicationInfo = &app_info;
-        instance_info.enabledLayerCount = static_cast<uint32_t>(this->vulkan_validation_layers_.size());
-        instance_info.ppEnabledLayerNames = this->vulkan_validation_layers_.data();
-        instance_info.enabledExtensionCount = static_cast<uint32_t>(this->vulkan_instance_extensions_.size());
-        instance_info.ppEnabledExtensionNames = this->vulkan_instance_extensions_.data();
+        instance_info.enabledLayerCount = static_cast<uint32_t>(validation_layers.size());
+        instance_info.ppEnabledLayerNames = validation_layers.data();
+        instance_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+        instance_info.ppEnabledExtensionNames = extensions.data();
 
         std::lock_guard<std::mutex> instance_guard(this->vulkan_instance_.mutex);
         this->vulkan_instance_.synced_object = vk::createInstance(instance_info);
@@ -221,11 +216,14 @@ namespace Penguin::Sample
         queue_creation_info.queueCount = 1;
         queue_creation_info.queueFamilyIndex = this->vulkan_queue_family_index_;
 
+        auto device_layers = this->validate_vulkan_device_layers(desired_device_layers);
+        auto device_extensions = this->validate_vulkan_device_extensions(desired_device_extensions);
+
         vk::DeviceCreateInfo device_creation_info;
-        device_creation_info.enabledLayerCount = static_cast<uint32_t>(this->vulkan_device_layers_.size());
-        device_creation_info.ppEnabledLayerNames = this->vulkan_device_layers_.data();
-        device_creation_info.enabledExtensionCount = static_cast<uint32_t>(this->vulkan_device_extensions_.size());
-        device_creation_info.ppEnabledExtensionNames = vulkan_device_extensions_.data();
+        device_creation_info.enabledLayerCount = static_cast<uint32_t>(device_layers.size());
+        device_creation_info.ppEnabledLayerNames = device_layers.data();
+        device_creation_info.enabledExtensionCount = static_cast<uint32_t>(device_extensions.size());
+        device_creation_info.ppEnabledExtensionNames = device_extensions.data();
         device_creation_info.queueCreateInfoCount = 1;
         device_creation_info.pQueueCreateInfos = &queue_creation_info;
 
@@ -341,15 +339,7 @@ namespace Penguin::Sample
 
         Vulkan 1.1 Specification - Section 31.8 - WSI Swapchain]
         */
-
-        vk::SurfaceFormatKHR desired_format = { vk::Format::eR8G8B8A8Unorm, vk::ColorSpaceKHR::eSrgbNonlinear };
-        vk::SurfaceFormatKHR swapchain_format = this->get_vulkan_swapchain_format(desired_format);
-
-        vk::Extent2D desired_image_size = { 800, 600 };
-
-        vk::ImageUsageFlags desired_image_usages = vk::ImageUsageFlagBits::eColorAttachment;
-
-        vk::SurfaceTransformFlagBitsKHR desired_image_transform = vk::SurfaceTransformFlagBitsKHR::eIdentity;
+        vk::SurfaceFormatKHR swapchain_format = this->validate_vulkan_swapchain_format(desired_format);
 
         vk::SwapchainCreateInfoKHR swapchain_creation_info;
         swapchain_creation_info.flags = vk::SwapchainCreateFlagsKHR();
@@ -357,15 +347,15 @@ namespace Penguin::Sample
         swapchain_creation_info.minImageCount = this->get_vulkan_swapchain_image_count();
         swapchain_creation_info.imageFormat = swapchain_format.format;
         swapchain_creation_info.imageColorSpace = swapchain_format.colorSpace;
-        swapchain_creation_info.imageExtent = this->get_vulkan_swapchain_image_size(desired_image_size);
+        swapchain_creation_info.imageExtent = this->validate_vulkan_swapchain_image_size(desired_image_size);
         swapchain_creation_info.imageArrayLayers = 1;
-        swapchain_creation_info.imageUsage = this->get_vulkan_swapchain_image_usages(desired_image_usages);
+        swapchain_creation_info.imageUsage = this->validate_vulkan_swapchain_image_usages(desired_image_usages);
         swapchain_creation_info.imageSharingMode = vk::SharingMode::eExclusive;
         swapchain_creation_info.queueFamilyIndexCount = 0;
         swapchain_creation_info.pQueueFamilyIndices = nullptr;
-        swapchain_creation_info.preTransform = this->get_vulkan_swapchain_image_transform(desired_image_transform);
+        swapchain_creation_info.preTransform = this->validate_vulkan_swapchain_image_transform(desired_image_transform);
         swapchain_creation_info.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
-        swapchain_creation_info.presentMode = this->presentation_mode_;
+        swapchain_creation_info.presentMode = this->validate_vulkan_presentation_mode(vk::PresentModeKHR::eMailbox);
         swapchain_creation_info.clipped = VK_TRUE;
         
         {
@@ -373,35 +363,9 @@ namespace Penguin::Sample
             swapchain_creation_info.oldSwapchain = this->vulkan_swapchain_.synced_object;
 
             this->vulkan_swapchain_.synced_object = this->vulkan_logical_device_.synced_object.createSwapchainKHR(swapchain_creation_info);
-        }
-    }
-
-
-    vk::SurfaceFormatKHR
-    Application::get_vulkan_swapchain_format(const vk::SurfaceFormatKHR& desired_format) const
-    {
-        auto supported_formats = this->vulkan_physical_device_.getSurfaceFormatsKHR(this->presentation_surface_);
-
-        if (supported_formats.size() == 1 && supported_formats[0].format == vk::Format::eUndefined)
-        {
-            return desired_format;
+            this->vulkan_swapchain_images_ = this->vulkan_logical_device_.synced_object.getSwapchainImagesKHR(this->vulkan_swapchain_.synced_object);
         }
 
-        auto find_result = std::find(supported_formats.begin(), supported_formats.end(), desired_format);
-        if (find_result != supported_formats.end())
-        {
-            return desired_format;
-        }
-
-        auto find_alternative = std::find_if(supported_formats.begin(), supported_formats.end(), [desired_format](const auto& format) { return desired_format.format == format.format; });
-        if (find_alternative != supported_formats.end())
-        {
-            std::cerr << "Desired swapchain format is not available, selecting alternative colour space = " << vk::to_string(find_alternative->colorSpace) << '\n';
-            return *find_alternative;
-        }
-
-        std::cerr << "Desired swapchain format is not available, selecting alternative format = " << vk::to_string(supported_formats[0].format) << ":" << vk::to_string(supported_formats[0].colorSpace) << '\n';
-        return supported_formats[0];
     }
 
 
@@ -429,170 +393,9 @@ namespace Penguin::Sample
     }
 
 
-    vk::Extent2D
-    Application::get_vulkan_swapchain_image_size(const vk::Extent2D& desired_image_size) const
-    {
-        vk::SurfaceCapabilitiesKHR surface_capabilites = this->vulkan_physical_device_.getSurfaceCapabilitiesKHR(this->presentation_surface_);
-        /*
-       currentExtent is the current width and height of the surface, or the
-       special value (0xFFFFFFFF, 0xFFFFFFFF) indicating that the surface size
-       will be determined by the extent of a swapchain targeting the surface.
-
-       [Vulkan 1.1 Specification - Section 31.5 - Surface Queries]
-       */
-        vk::Extent2D swapchain_image_size = desired_image_size;
-        
-        if (surface_capabilites.currentExtent.width == 0xFFFFFFFF)
-        {
-            swapchain_image_size.width = std::clamp(swapchain_image_size.width, surface_capabilites.minImageExtent.width, surface_capabilites.maxImageExtent.width);
-            swapchain_image_size.height = std::clamp(swapchain_image_size.height, surface_capabilites.minImageExtent.height, surface_capabilites.maxImageExtent.height);
-        }
-        else
-        {
-            swapchain_image_size = surface_capabilites.currentExtent;
-        }
-
-        return swapchain_image_size;
-    }
-
-
-    vk::SurfaceTransformFlagBitsKHR
-    Application::get_vulkan_swapchain_image_transform(const vk::SurfaceTransformFlagBitsKHR& desired_image_transform) const
-    {
-        vk::SurfaceCapabilitiesKHR surface_capabilites = this->vulkan_physical_device_.getSurfaceCapabilitiesKHR(this->presentation_surface_);
-
-        vk::SurfaceTransformFlagsKHR swapchain_image_transform = desired_image_transform & surface_capabilites.supportedTransforms;
-        if (vk::SurfaceTransformFlagsKHR(desired_image_transform) != swapchain_image_transform)
-        {
-            std::cerr << "Swapchain does not support image transform = " << vk::to_string(desired_image_transform) << '\n';
-            return surface_capabilites.currentTransform;
-        }
-        return desired_image_transform;
-    }
-
-
-    vk::ImageUsageFlags
-    Application::get_vulkan_swapchain_image_usages(const vk::ImageUsageFlags& desired_image_usages) const
-    {
-        vk::SurfaceCapabilitiesKHR surface_capabilites = this->vulkan_physical_device_.getSurfaceCapabilitiesKHR(this->presentation_surface_);
-
-        vk::ImageUsageFlags swapchain_image_usages = desired_image_usages & surface_capabilites.supportedUsageFlags;
-        if (desired_image_usages != swapchain_image_usages)
-        {
-            std::cerr << "Swapchain does not support image usage = " << vk::to_string(desired_image_usages ^ swapchain_image_usages) << '\n';
-        }
-        return swapchain_image_usages;
-    }
-
-
     void
     Application::run(void)
     {
-    }
-
-
-    void
-    Application::set_vulkan_device_extensions(void)
-    {
-        std::cout << "No device extensions are being set" << '\n';
-
-        auto available_device_extensions = this->vulkan_physical_device_.enumerateDeviceExtensionProperties();
-
-        for (const auto& extension : this->vulkan_device_extensions_)
-        {
-            if (available_device_extensions.end() ==
-                std::find_if(available_device_extensions.begin(), available_device_extensions.end(),
-                    [extension](const auto& ext) { return (0 == std::strcmp(ext.extensionName, extension)); }))
-            {
-                std::stringstream error_stream;
-                error_stream << "Device extension: " << extension << " is not available";
-                throw std::runtime_error(error_stream.str().c_str());
-            }
-        }
-    }
-
-
-    void
-    Application::set_vulkan_device_layers(void)
-    {
-        this->vulkan_device_extensions_.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-
-        auto available_device_layers = this->vulkan_physical_device_.enumerateDeviceLayerProperties();
-
-        for (const auto& layer : this->vulkan_device_layers_)
-        {
-            if (available_device_layers.end() ==
-                std::find_if(available_device_layers.begin(), available_device_layers.end(),
-                    [layer](const auto& device_layer) { return (0 == std::strcmp(device_layer.layerName, layer)); }))
-            {
-                std::stringstream error_stream;
-                error_stream << "Device layer: " << layer << " is not available";
-                throw std::runtime_error(error_stream.str().c_str());
-            }
-        }
-    }
-
-
-    void
-    Application::set_vulkan_instance_extensions(void)
-    {
-        /*
-        Extensions may define new Vulkan commands, structures, and enumerants.
-        For compilation purposes, the interfaces defined by registered extensions,
-        including new structures and enumerants as well as function pointer types
-        for new commands, are defined in the Khronos-supplied vulkan_core.h
-        together with the core API. However, commands defined by extensions may not
-        be available for static linking - in which case function pointers to these
-        commands should be queried at runtime as described in Command Function
-        Pointers. Extensions may be provided by layers as well as by a Vulkan
-        implementation.
-
-        [Vulkan 1.1 Specification - Section 33.2 - Extensions]
-         */
-
-        this->vulkan_instance_extensions_.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-        this->vulkan_instance_extensions_.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-#if defined(VK_USE_PLATFORM_WIN32_KHR)
-        this->vulkan_instance_extensions_.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
-#elif defined(VK_USE_PLATFORM_XLIB_KHR)
-        this->vulkan_instance_extensions_.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
-#elif defined(VK_USE_PLATFORM_XCB_KHR)
-        this->vulkan_instance_extensions_.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
-#else
-# error("Unknown Window System Integration(WSI)")
-#endif
-    
-        auto available_extensions = vk::enumerateInstanceExtensionProperties();
-
-        for (const auto& extension : this->vulkan_instance_extensions_)
-        {
-            if (available_extensions.end() ==
-                std::find_if(available_extensions.begin(), available_extensions.end(),
-                    [extension](const auto& ext) { return (0 == std::strcmp(ext.extensionName, extension)); }))
-            {
-                std::stringstream error_stream;
-                error_stream << "Extension: " << extension << " is not available";
-                throw std::runtime_error(error_stream.str().c_str());
-            }
-        }
-    }
-
-
-    void
-    Application::set_vulkan_presentation_mode(void)
-    {
-        std::vector<vk::PresentModeKHR> presentation_modes = this->vulkan_physical_device_.getSurfacePresentModesKHR(this->presentation_surface_);
-
-        for (const auto& mode : presentation_modes)
-        {
-            if (mode == vk::PresentModeKHR::eFifo)
-            {
-                this->presentation_mode_ = mode;
-                return;
-            }
-        }
-
-        throw std::runtime_error("Unable to find a desirable presentation mode");
     }
 
 
@@ -635,8 +438,192 @@ namespace Penguin::Sample
     }
 
 
-    void
-    Application::set_vulkan_validation_layers(void)
+    std::vector<const char*>
+    Application::validate_vulkan_device_extensions(const std::vector<const char*>& desired_extensions) const
+    {
+        auto available_device_extensions = this->vulkan_physical_device_.enumerateDeviceExtensionProperties();
+        std::vector<const char*> enabled_extensions;
+
+        for (const auto& extension : desired_extensions)
+        {
+            if (available_device_extensions.end() ==
+                std::find_if(available_device_extensions.begin(), available_device_extensions.end(),
+                    [extension](const auto& ext) { return (0 == std::strcmp(ext.extensionName, extension)); }))
+            {
+                std::cerr << "ERROR! Device extension (" << extension << ") is not available." << '\n';
+            }
+            else
+            {
+                enabled_extensions.push_back(extension);
+            }
+        }
+        return enabled_extensions;
+    }
+
+
+    std::vector<const char*>
+    Application::validate_vulkan_device_layers(const std::vector<const char*>& desired_layers) const
+    {
+        auto available_device_layers = this->vulkan_physical_device_.enumerateDeviceLayerProperties();
+        std::vector<const char*> enabled_layers;
+
+        for (const auto& layer : desired_layers)
+        {
+            if (available_device_layers.end() ==
+                std::find_if(available_device_layers.begin(), available_device_layers.end(),
+                    [layer](const auto& device_layer) { return (0 == std::strcmp(device_layer.layerName, layer)); }))
+            {
+                std::cerr << "ERROR! Device layer (" << layer << ") is not available." << '\n';
+            }
+            else
+            {
+                enabled_layers.push_back(layer);
+            }
+        }
+
+        return enabled_layers;
+    }
+
+
+    std::vector<const char*>
+    Application::validate_vulkan_instance_extensions(const std::vector<const char*>& desired_extensions) const
+    {
+        /*
+        Extensions may define new Vulkan commands, structures, and enumerants.
+        For compilation purposes, the interfaces defined by registered extensions,
+        including new structures and enumerants as well as function pointer types
+        for new commands, are defined in the Khronos-supplied vulkan_core.h
+        together with the core API. However, commands defined by extensions may not
+        be available for static linking - in which case function pointers to these
+        commands should be queried at runtime as described in Command Function
+        Pointers. Extensions may be provided by layers as well as by a Vulkan
+        implementation.
+
+        [Vulkan 1.1 Specification - Section 33.2 - Extensions]
+         */
+        auto available_extensions = vk::enumerateInstanceExtensionProperties();
+        std::vector<const char*> enabled_extensions;
+
+        for (const auto& extension : desired_extensions)
+        {
+            if (available_extensions.end() ==
+                std::find_if(available_extensions.begin(), available_extensions.end(),
+                    [extension](const auto& ext) { return (0 == std::strcmp(ext.extensionName, extension)); }))
+            {
+                std::cerr << "ERROR! Extension (" << extension << ") is not available." << '\n';
+            }
+            else
+            {
+                enabled_extensions.push_back(extension);
+            }
+        }
+
+        return enabled_extensions;
+    }
+
+
+    vk::PresentModeKHR
+    Application::validate_vulkan_presentation_mode(const vk::PresentModeKHR& desired_mode) const
+    {
+        std::vector<vk::PresentModeKHR> presentation_modes = this->vulkan_physical_device_.getSurfacePresentModesKHR(this->presentation_surface_);
+        if (presentation_modes.end() == std::find(presentation_modes.begin(), presentation_modes.end(), desired_mode))
+        {
+            std::cerr << "ERROR! Unable to use presentation mode (" << vk::to_string(desired_mode) << "). Falling back to FIFO." << '\n';
+            return vk::PresentModeKHR::eFifo;
+        }
+        else
+        {
+            return desired_mode;
+        }
+    }
+
+
+    vk::SurfaceFormatKHR
+    Application::validate_vulkan_swapchain_format(const vk::SurfaceFormatKHR& desired_format) const
+    {
+        auto supported_formats = this->vulkan_physical_device_.getSurfaceFormatsKHR(this->presentation_surface_);
+
+        if (supported_formats.size() == 1 && supported_formats[0].format == vk::Format::eUndefined)
+        {
+            return desired_format;
+        }
+
+        auto find_result = std::find(supported_formats.begin(), supported_formats.end(), desired_format);
+        if (find_result != supported_formats.end())
+        {
+            return desired_format;
+        }
+
+        auto find_alternative = std::find_if(supported_formats.begin(), supported_formats.end(), [desired_format](const auto& format) { return desired_format.format == format.format; });
+        if (find_alternative != supported_formats.end())
+        {
+            std::cerr << "ERROR! Desired swapchain format is not available, selecting alternative colour space = " << vk::to_string(find_alternative->colorSpace) << '\n';
+            return *find_alternative;
+        }
+
+        std::cerr << "ERROR! Desired swapchain format is not available, selecting alternative format = " << vk::to_string(supported_formats[0].format) << ":" << vk::to_string(supported_formats[0].colorSpace) << '\n';
+        return supported_formats[0];
+    }
+
+
+    vk::Extent2D
+    Application::validate_vulkan_swapchain_image_size(const vk::Extent2D& desired_image_size) const
+    {
+        vk::SurfaceCapabilitiesKHR surface_capabilites = this->vulkan_physical_device_.getSurfaceCapabilitiesKHR(this->presentation_surface_);
+        /*
+       currentExtent is the current width and height of the surface, or the
+       special value (0xFFFFFFFF, 0xFFFFFFFF) indicating that the surface size
+       will be determined by the extent of a swapchain targeting the surface.
+
+       [Vulkan 1.1 Specification - Section 31.5 - Surface Queries]
+       */
+        vk::Extent2D swapchain_image_size = desired_image_size;
+
+        if (surface_capabilites.currentExtent.width == 0xFFFFFFFF)
+        {
+            swapchain_image_size.width = std::clamp(swapchain_image_size.width, surface_capabilites.minImageExtent.width, surface_capabilites.maxImageExtent.width);
+            swapchain_image_size.height = std::clamp(swapchain_image_size.height, surface_capabilites.minImageExtent.height, surface_capabilites.maxImageExtent.height);
+        }
+        else
+        {
+            swapchain_image_size = surface_capabilites.currentExtent;
+        }
+
+        return swapchain_image_size;
+    }
+
+
+    vk::SurfaceTransformFlagBitsKHR
+    Application::validate_vulkan_swapchain_image_transform(const vk::SurfaceTransformFlagBitsKHR& desired_image_transform) const
+    {
+        vk::SurfaceCapabilitiesKHR surface_capabilites = this->vulkan_physical_device_.getSurfaceCapabilitiesKHR(this->presentation_surface_);
+
+        vk::SurfaceTransformFlagsKHR swapchain_image_transform = desired_image_transform & surface_capabilites.supportedTransforms;
+        if (vk::SurfaceTransformFlagsKHR(desired_image_transform) != swapchain_image_transform)
+        {
+            std::cerr << "ERROR! Swapchain does not support image transform = " << vk::to_string(desired_image_transform) << '\n';
+            return surface_capabilites.currentTransform;
+        }
+        return desired_image_transform;
+    }
+
+
+    vk::ImageUsageFlags
+    Application::validate_vulkan_swapchain_image_usages(const vk::ImageUsageFlags& desired_image_usages) const
+    {
+        vk::SurfaceCapabilitiesKHR surface_capabilites = this->vulkan_physical_device_.getSurfaceCapabilitiesKHR(this->presentation_surface_);
+
+        vk::ImageUsageFlags swapchain_image_usages = desired_image_usages & surface_capabilites.supportedUsageFlags;
+        if (desired_image_usages != swapchain_image_usages)
+        {
+            std::cerr << "ERROR! Swapchain does not support image usage = " << vk::to_string(desired_image_usages ^ swapchain_image_usages) << '\n';
+        }
+        return swapchain_image_usages;
+    }
+
+
+    std::vector<const char*>
+    Application::validate_vulkan_validation_layers(const std::vector<const char*>& desired_validation_layers) const
     {
         /*
         When a layer is enabled, it inserts itself into the call chain for Vulkan
@@ -657,24 +644,23 @@ namespace Penguin::Sample
 
         [Vulkan 1.1 Specification - Section 33.1 - Layers]
         */
-
-        this->vulkan_validation_layers_ =
-        {
-            "VK_LAYER_LUNARG_standard_validation"
-        };
-
         auto available_instance_layers = vk::enumerateInstanceLayerProperties();
+        std::vector<const char*> enabled_validation_layers;
 
-        for (const auto& layer : this->vulkan_validation_layers_)
+        for (const auto& layer : desired_validation_layers)
         {
             if (available_instance_layers.end() ==
                 std::find_if(available_instance_layers.begin(), available_instance_layers.end(),
                     [layer](const auto& instance_layer) { return (0 == std::strcmp(instance_layer.layerName, layer)); }))
             {
-                std::stringstream error_stream;
-                error_stream << "Validation layer: " << layer << " is not available";
-                throw std::runtime_error(error_stream.str().c_str());
+                std::cerr << "ERROR: Validation layer (" << layer << ") is not available." << '\n';
+            }
+            else
+            {
+                enabled_validation_layers.push_back(layer);
             }
         }
+
+        return enabled_validation_layers;
     }
 }
