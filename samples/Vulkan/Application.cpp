@@ -30,6 +30,19 @@ namespace Penguin::Sample
 
 
     void
+    Application::begin_vulkan_command_buffer_recording(size_t buffer_index)
+    {
+        vk::CommandBufferBeginInfo begin_info;
+        begin_info.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+        begin_info.pInheritanceInfo = nullptr;
+        begin_info.pNext = nullptr;
+
+        std::lock_guard guard(this->vulkan_command_buffer_mutexes_[buffer_index]);
+        this->vulkan_command_buffers_[buffer_index].begin(begin_info);
+    }
+
+
+    void
     Application::configure(void)
     {
         this->create_vulkan_instance();
@@ -120,8 +133,9 @@ namespace Penguin::Sample
         buffer_allocation_info.level = vk::CommandBufferLevel::ePrimary;
 
         {
-            std::scoped_lock guard(this->vulkan_logical_device_.mutex, this->vulkan_command_buffers_.mutex);
-            this->vulkan_command_buffers_.synced_object = this->vulkan_logical_device_.synced_object.allocateCommandBuffers(buffer_allocation_info);
+            std::lock_guard guard(this->vulkan_logical_device_.mutex);
+            this->vulkan_command_buffers_ = this->vulkan_logical_device_.synced_object.allocateCommandBuffers(buffer_allocation_info);
+            this->vulkan_command_buffer_mutexes_ = std::vector<std::mutex>(this->vulkan_command_buffers_.size());
         }
     }
 
@@ -271,13 +285,13 @@ namespace Penguin::Sample
 
             [Vulkan 1.1 Specification - Section 34.1 - Features]
             */
-            auto device_features = device.getFeatures();
+auto device_features = device.getFeatures();
 
-            if (device_properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
-            {
-                this->vulkan_physical_device_ = device;
-                return;
-            }
+if (device_properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
+{
+    this->vulkan_physical_device_ = device;
+    return;
+}
         }
 
         throw std::runtime_error("No suitable physical device found");
@@ -285,7 +299,7 @@ namespace Penguin::Sample
 
 
     void
-    Application::create_vulkan_swapchain(void)
+        Application::create_vulkan_swapchain(void)
     {
         /*
         A swapchain is an abstraction for an array of presentable images that
@@ -357,7 +371,7 @@ namespace Penguin::Sample
         swapchain_creation_info.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
         swapchain_creation_info.presentMode = this->validate_vulkan_presentation_mode(vk::PresentModeKHR::eMailbox);
         swapchain_creation_info.clipped = VK_TRUE;
-        
+
         {
             std::scoped_lock guard(this->vulkan_logical_device_.mutex, this->vulkan_swapchain_.mutex);
             swapchain_creation_info.oldSwapchain = this->vulkan_swapchain_.synced_object;
@@ -366,6 +380,44 @@ namespace Penguin::Sample
             this->vulkan_swapchain_images_ = this->vulkan_logical_device_.synced_object.getSwapchainImagesKHR(this->vulkan_swapchain_.synced_object);
         }
 
+    }
+
+
+    void
+    Application::end_vulkan_command_buffer_recording(size_t buffer_index)
+    {
+        std::lock_guard guard(this->vulkan_command_buffer_mutexes_[buffer_index]);
+        this->vulkan_command_buffers_[buffer_index].end();
+    }
+
+
+    uint32_t
+    Application::get_vulkan_swapchain_image_index(void)
+    {
+        vk::Fence     fence;
+
+        std::scoped_lock guard(this->vulkan_logical_device_.mutex, this->vulkan_swapchain_.mutex);
+        auto image_result = this->vulkan_logical_device_.synced_object.acquireNextImageKHR(
+            this->vulkan_swapchain_.synced_object,
+            acquire_swapchain_image_timeout_nanoseconds,
+            this->vulkan_presentation_semaphore_,
+            fence
+        );
+
+        switch (image_result.result)
+        {
+        case vk::Result::eSuccess:
+            return image_result.value;
+        case vk::Result::eSuboptimalKHR:
+            std::cerr << "ERROR! Swapchain is in a suboptimal state and should be recreated." << '\n';
+            return image_result.value;
+        case vk::Result::eErrorOutOfDateKHR:
+            std::cerr << "ERROR! Swapchain is out of date, needs to be destroyed and recreated." << '\n';
+            return 0xFFFFFFFF;
+        default:
+            std::cerr << "ERROR! Acquiring image from swapchain generated an unusual result (" << vk::to_string(image_result.result) << ")." << '\n';
+            return 0xFFFFFFFF;
+        }
     }
 
 
@@ -390,6 +442,25 @@ namespace Penguin::Sample
         }
 
         return swapchain_image_count;
+    }
+
+
+    void
+    Application::present(void)
+    {
+        vk::PresentInfoKHR presentation_info;
+        presentation_info.pImageIndices = &this->vulkan_swapchain_image_index_;
+        presentation_info.pResults = nullptr;
+        presentation_info.pSwapchains = &this->vulkan_swapchain_.synced_object;
+        presentation_info.pWaitSemaphores = &this->vulkan_presentation_semaphore_;
+        presentation_info.swapchainCount = 1;
+        presentation_info.waitSemaphoreCount = 1;
+
+        vk::Result presentation_result = this->vulkan_graphics_queue_.presentKHR(presentation_info);
+        if (presentation_result != vk::Result::eSuccess)
+        {
+            std::cerr << "ERROR! Call to present was not successful (" << vk::to_string(presentation_result) << ")." << '\n';
+        }
     }
 
 

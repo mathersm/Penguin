@@ -76,6 +76,10 @@ namespace Penguin::Sample
     
     const vk::SurfaceTransformFlagBitsKHR desired_image_transform =
         vk::SurfaceTransformFlagBitsKHR::eIdentity;
+
+
+    const uint64_t acquire_swapchain_image_timeout_nanoseconds =
+        2000000000; // Nanoseconds
 }
 
 

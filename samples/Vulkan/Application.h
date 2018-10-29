@@ -29,6 +29,8 @@ namespace Penguin::Sample
         Application& operator = (const Application&) = delete;
 
     private:
+        void begin_vulkan_command_buffer_recording(size_t buffer_index);
+
         void create_presentation_surface(void);
         void create_vulkan_command_buffers(void);
         void create_vulkan_command_pool(void);
@@ -38,7 +40,12 @@ namespace Penguin::Sample
         void create_vulkan_physical_device(void);
         void create_vulkan_swapchain(void);
 
+        void end_vulkan_command_buffer_recording(size_t buffer_index);
+
+        uint32_t get_vulkan_swapchain_image_index(void);
         uint32_t get_vulkan_swapchain_image_count(void) const;
+
+        void present(void);
 
         void set_vulkan_queue_family(void);
 
@@ -60,9 +67,12 @@ namespace Penguin::Sample
         Penguin::Sample::Host_Synchronized<vk::Device> vulkan_logical_device_;
         Penguin::Sample::Host_Synchronized<vk::SwapchainKHR> vulkan_swapchain_;
         std::vector<vk::Image> vulkan_swapchain_images_;
+        uint32_t vulkan_swapchain_image_index_;
+        vk::Semaphore vulkan_presentation_semaphore_;
         vk::Queue vulkan_graphics_queue_;
         Penguin::Sample::Host_Synchronized<vk::CommandPool> vulkan_command_pool_;
-        Penguin::Sample::Host_Synchronized<std::vector<vk::CommandBuffer>> vulkan_command_buffers_;
+        std::vector<vk::CommandBuffer> vulkan_command_buffers_;
+        std::vector<std::mutex> vulkan_command_buffer_mutexes_;
     };
 }
 

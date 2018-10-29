@@ -18,7 +18,31 @@ namespace Penguin::Sample
 
         std::mutex mutex;
         T synced_object;
+
+        Host_Synchronized(void);
+        Host_Synchronized(const T& obj);
+        Host_Synchronized(T&& obj);
     };
+
+
+    template <typename T>
+    Host_Synchronized<T>::Host_Synchronized(void)
+    {
+    }
+
+
+    template <typename T>
+    Host_Synchronized<T>::Host_Synchronized(const T& obj)
+        : synced_object(obj)
+    {
+    }
+
+
+    template <typename T>
+    Host_Synchronized<T>::Host_Synchronized(T&& obj)
+        : synced_object(obj)
+    {
+    }
 }
 
 
