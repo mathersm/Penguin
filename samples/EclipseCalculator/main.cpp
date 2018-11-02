@@ -66,7 +66,7 @@
 #include <random>
 #include <iostream>
 #include <array>
-#include <penguin/Die.h>
+#include "Die.h"
 
 
 namespace Penguin

@@ -1,5 +1,6 @@
 # Add an executable
 add_executable (Sample_Eclipse_Calculator
+    Die.h
     main.cpp)
 
 # Dependencies

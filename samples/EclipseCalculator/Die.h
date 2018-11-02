@@ -1,11 +1,11 @@
-#ifndef PENGUIN_DIE_H
-#define PENGUIN_DIE_H
+#ifndef PENGUIN_SAMPLE_DIE_H
+#define PENGUIN_SAMPLE_DIE_H
 
 
 #include <random>
 
 
-namespace Penguin
+namespace Penguin::Sample
 {
     template <typename T>
     class Die
@@ -15,7 +15,7 @@ namespace Penguin
 
         Die(const std::initializer_list<_face_type> face_list);
 
-        const _face_type& roll(void) const;
+        const _face_type& roll(void);
 
     protected:
         Die(void) = delete;
@@ -24,7 +24,7 @@ namespace Penguin
 
     private:
         std::random_device                      random_device_;
-        mutable std::default_random_engine      random_engine_;
+        std::default_random_engine              random_engine_;
         std::uniform_int_distribution<size_t>   distribution_;
         std::vector<_face_type>                 faces_map_;
     };
@@ -41,11 +41,11 @@ namespace Penguin
 
     template <typename T>
     const typename Die<T>::_face_type&
-    Die<T>::roll(void) const
+    Die<T>::roll(void)
     {
         return this->faces_map_[this->distribution_(this->random_engine_)];
     }
 }
 
 
-#endif // PENGUIN_DIE_H
+#endif // PENGUIN_SAMPLE_DIE_H
