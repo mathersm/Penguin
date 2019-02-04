@@ -33,12 +33,12 @@ namespace Penguin::Sample
     Application::begin_vulkan_command_buffer_recording(size_t buffer_index)
     {
         vk::CommandBufferBeginInfo begin_info;
-        begin_info.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+        // begin_info.flags;
         begin_info.pInheritanceInfo = nullptr;
         begin_info.pNext = nullptr;
 
-        std::lock_guard guard(this->vulkan_command_buffer_mutexes_[buffer_index]);
-        this->vulkan_command_buffers_[buffer_index].begin(begin_info);
+        std::lock_guard guard(this->vulkan_command_pool_.mutex);
+        this->vulkan_command_pool_.command_buffers[buffer_index].begin(begin_info);
     }
 
 
@@ -54,6 +54,7 @@ namespace Penguin::Sample
         this->create_vulkan_graphics_queue();
         this->create_vulkan_command_pool();
         this->create_vulkan_command_buffers();
+        this->create_vulkan_render_pass();
     }
 
 
@@ -129,13 +130,12 @@ namespace Penguin::Sample
 
         vk::CommandBufferAllocateInfo buffer_allocation_info;
         buffer_allocation_info.commandBufferCount = 1;
-        buffer_allocation_info.commandPool = this->vulkan_command_pool_.synced_object;
+        buffer_allocation_info.commandPool = this->vulkan_command_pool_.command_pool;
         buffer_allocation_info.level = vk::CommandBufferLevel::ePrimary;
 
         {
             std::lock_guard guard(this->vulkan_logical_device_.mutex);
-            this->vulkan_command_buffers_ = this->vulkan_logical_device_.synced_object.allocateCommandBuffers(buffer_allocation_info);
-            this->vulkan_command_buffer_mutexes_ = std::vector<std::mutex>(this->vulkan_command_buffers_.size());
+            this->vulkan_command_pool_.command_buffers = this->vulkan_logical_device_.synced_object.allocateCommandBuffers(buffer_allocation_info);
         }
     }
 
@@ -161,7 +161,7 @@ namespace Penguin::Sample
         pool_info.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
 
         std::scoped_lock sync_guard(this->vulkan_logical_device_.mutex, this->vulkan_command_pool_.mutex);
-        this->vulkan_command_pool_.synced_object = this->vulkan_logical_device_.synced_object.createCommandPool(pool_info);
+        this->vulkan_command_pool_.command_pool = this->vulkan_logical_device_.synced_object.createCommandPool(pool_info);
     }
 
 
@@ -299,7 +299,49 @@ if (device_properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
 
 
     void
-        Application::create_vulkan_swapchain(void)
+    Application::create_vulkan_render_pass(void)
+    {
+        /*
+        A render pass represents a collection of attachments, subpasses, and
+        dependencies between the subpasses, and describes how the attachments
+        are used over the course of the subpasses. The use of a render pass in
+        a command buffer is a render pass instance.
+        
+        [Vulkan 1.1.94 Specification - Section 7 - Render Pass]
+        */
+
+        vk::AttachmentDescription colour_attachment;
+        colour_attachment.finalLayout = vk::ImageLayout::ePresentSrcKHR;
+        colour_attachment.flags;
+        colour_attachment.format = vk::Format::eB8G8R8A8Unorm;
+        colour_attachment.initialLayout = vk::ImageLayout::eUndefined;
+        colour_attachment.loadOp = vk::AttachmentLoadOp::eLoad;
+        colour_attachment.samples = vk::SampleCountFlagBits::e1;
+        colour_attachment.stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
+        colour_attachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+        colour_attachment.storeOp = vk::AttachmentStoreOp::eStore;
+
+        vk::AttachmentReference colour_attachment_reference;
+        colour_attachment_reference.attachment = 0;
+        colour_attachment_reference.layout = vk::ImageLayout::eColorAttachmentOptimal;
+
+        vk::RenderPassCreateInfo render_pass_info;
+        render_pass_info.attachmentCount = 0;
+        render_pass_info.dependencyCount = 0;
+        render_pass_info.flags;
+        render_pass_info.pAttachments = nullptr;
+        render_pass_info.pDependencies = nullptr;
+        render_pass_info.pNext = nullptr;
+        render_pass_info.pSubpasses = nullptr;
+        render_pass_info.subpassCount = 0;
+
+        std::lock_guard<std::mutex> logical_device_guard(this->vulkan_logical_device_.mutex);
+        this->vulkan_render_pass_ = this->vulkan_logical_device_.synced_object.createRenderPass(render_pass_info);
+    }
+
+
+    void
+    Application::create_vulkan_swapchain(void)
     {
         /*
         A swapchain is an abstraction for an array of presentable images that
@@ -386,8 +428,8 @@ if (device_properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
     void
     Application::end_vulkan_command_buffer_recording(size_t buffer_index)
     {
-        std::lock_guard guard(this->vulkan_command_buffer_mutexes_[buffer_index]);
-        this->vulkan_command_buffers_[buffer_index].end();
+        std::lock_guard guard(this->vulkan_command_pool_.mutex);
+        this->vulkan_command_pool_.command_buffers[buffer_index].end();
     }
 
 
