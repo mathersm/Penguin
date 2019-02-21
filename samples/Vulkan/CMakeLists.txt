@@ -9,6 +9,10 @@ if (Vulkan_FOUND)
     Host_Synchronized.h
     Sample_Vulkan.cpp
     Vulkan_Config.h
+    Vulkan_Renderer.cpp
+    Vulkan_Renderer.h
+    Window.cpp
+    Window.h
   )
 
   add_dependencies (Sample_Vulkan Penguin)

@@ -62,14 +62,6 @@ namespace Penguin::Sample
         vk::ColorSpaceKHR::eSrgbNonlinear
     };
 
-    
-    const vk::Extent2D desired_image_size =
-    {
-        800,
-        600
-    };
-
-
     const vk::ImageUsageFlags desired_image_usages =
         vk::ImageUsageFlagBits::eColorAttachment;
     
