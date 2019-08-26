@@ -39,6 +39,10 @@ Release/
 *.lastcodeanalysissucceeded
 *.sln
 
+# Visual Studio 2019 files
+*.ilk
+*.pdb
+
 # Generated export header files
 *_export.h
 
