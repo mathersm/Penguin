@@ -8,6 +8,7 @@ add_library (Penguin SHARED
     Scoped_Timer.h
     Semaphore.cpp
     Semaphore.h
+    Timer.h
     Unbounded_Queue.h
     Version.h)
 
