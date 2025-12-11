@@ -2,6 +2,7 @@
 * Copyright (c) 2017 Michael Mathers
 */
 #include <penguin/Monitor.h>
+#include <chrono>
 #include <future>
 #include <iostream>
 #include <numeric>

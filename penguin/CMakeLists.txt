@@ -8,10 +8,12 @@ add_library (Penguin SHARED
     Scoped_Timer.h
     Semaphore.cpp
     Semaphore.h
+    Stream.h
     Thread_Pool.cpp
     Thread_Pool.h
     Thread_Pool_Task.cpp
     Thread_Pool_Task.h
+    Stream.h
     Timer.h
     Unbounded_Queue.h
     Version.h)
