@@ -8,6 +8,8 @@ add_library (Penguin SHARED
     Scoped_Timer.h
     Semaphore.cpp
     Semaphore.h
+    Thread_Pool.cpp
+    Thread_Pool.h
     Timer.h
     Unbounded_Queue.h
     Version.h)
@@ -27,7 +29,7 @@ include (GenerateExportHeader)
 generate_export_header(Penguin
     BASE_NAME Penguin
     EXPORT_MACRO_NAME Penguin_Export
-    EXPORT_FILE_NAME Penguin_export.h
+    EXPORT_FILE_NAME ${CMAKE_SOURCE_DIR}/penguin/Penguin_export.h
     STATIC_DEFINE Penguin_BUILT_AS_STATIC)
 
 if (UNIX)
