@@ -9,6 +9,10 @@ add_library (Penguin SHARED
     Semaphore.cpp
     Semaphore.h
     Stream.h
+    Thread_Pool.cpp
+    Thread_Pool.h
+    Thread_Pool_Task.cpp
+    Thread_Pool_Task.h
     Timer.h
     Unbounded_Queue.h
     Version.h)
@@ -28,7 +32,7 @@ include (GenerateExportHeader)
 generate_export_header(Penguin
     BASE_NAME Penguin
     EXPORT_MACRO_NAME Penguin_Export
-    EXPORT_FILE_NAME Penguin_export.h
+    EXPORT_FILE_NAME ${CMAKE_SOURCE_DIR}/penguin/Penguin_export.h
     STATIC_DEFINE Penguin_BUILT_AS_STATIC)
 
 if (UNIX)
