@@ -55,10 +55,16 @@ jobs:
         echo "build-output-dir=${{ github.workspace }}" >> "$GITHUB_OUTPUT"
 
     - name: Add to Paths
-      id: paths
+      id: path-setup
       shell: bash
       run: |
-        echo "${{ github.workspace }}/lib" >> "GITHUB_PATH" 
+        echo "${{ github.workspace }}/lib" >> "$GITHUB_PATH"
+
+    - name: Output path
+      id: path-output
+      shell: bash
+      run: |
+        echo "The value of GITHUB_PATH is $GITHUB_PATH"
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
