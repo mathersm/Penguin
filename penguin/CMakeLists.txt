@@ -10,6 +10,8 @@ add_library (Penguin SHARED
     Semaphore.h
     Thread_Pool.cpp
     Thread_Pool.h
+    Thread_Pool_Task.cpp
+    Thread_Pool_Task.h
     Timer.h
     Unbounded_Queue.h
     Version.h)

@@ -5,40 +5,6 @@
 
 namespace Penguin
 {
-	Thread_Pool_Task::Thread_Pool_Task(void)
-	{
-	}
-
-
-	Thread_Pool_Task::~Thread_Pool_Task(void)
-	{
-		this->interrupt();
-	}
-
-
-	int
-	Thread_Pool_Task::interrupt(void)
-	{
-		return 0;
-	}
-
-
-	int
-	Thread_Pool_Task::run(void)
-	{
-		return 0;
-	}
-
-
-	void
-	Thread_Pool_Task::set_stop_token(const std::stop_token& stop_token)
-	{
-		this->stopToken_ = stop_token;
-		/// TO-DO Establish a callback leveraging the interrupt function (if we can)
-	}
-
-
-
 	Thread_Pool::Thread_Pool(uint32_t initial_thread_count)
 		: shutdown_(false)
 		, threads_(initial_thread_count)
@@ -73,7 +39,7 @@ namespace Penguin
 	int
 	Thread_Pool::execute(std::shared_ptr<Penguin::Thread_Pool_Task>&& task)
 	{
-		this->taskQueue_.push(task);
+		this->taskQueue_.push(std::move(task));
 		return 0;
 	}
 
@@ -87,8 +53,9 @@ namespace Penguin
 			std::optional<std::shared_ptr<Penguin::Thread_Pool_Task>> task = pool_ptr->taskQueue_.try_pop_for(Thread_Pool::RETRIEVAL_TIMEOUT);
 			if (task.has_value())
 			{
-				std::stop_callback callback(stop_token, task.value()->interrupt());
-				task.value()->set_stop_token(stop_token);
+				/// TO-DO Add in a mechanism to allow a callback on interruption
+				// std::stop_callback callback(stop_token, [task] {task.value().interrupt(); });
+				
 				task.value()->run();
 				// Don't return here, allow the thread to pick up the next task from the queue
 			}

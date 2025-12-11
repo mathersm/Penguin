@@ -6,6 +6,7 @@
 
 
 #include "Penguin_export.h"
+#include "Thread_Pool_Task.h"
 #include "Unbounded_Queue.h"
 #include <thread>
 #include <vector>
@@ -13,20 +14,6 @@
 
 namespace Penguin
 {
-    class Penguin_Export Thread_Pool_Task
-    {
-    public:
-        Thread_Pool_Task(void);
-        virtual ~Thread_Pool_Task(void);
-
-        virtual int interrupt(void);
-        virtual int run(void);
-        void set_stop_token(const std::stop_token& stop_token);
-
-    private:
-        std::stop_token stopToken_;
-    };
-
 
     class Penguin_Export Thread_Pool
     {
