@@ -5,9 +5,6 @@
 #define PENGUIN_STREAM_H
 
 
-#include <iostream>
-
-
 namespace Penguin
 {
     template <typename STREAM, typename T>
