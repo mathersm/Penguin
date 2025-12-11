@@ -3,6 +3,7 @@
 */
 #include <penguin/Unbounded_Queue.h>
 #include <algorithm>
+#include <chrono>
 #include <future>
 #include <iostream>
 #include <numeric>
