@@ -2,7 +2,6 @@
 * Copyright (c) 2025 Michael Mathers
 */
 #include "Thread_Pool.h"
-#include <iostream>
 
 
 namespace Penguin
