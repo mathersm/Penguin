@@ -43,6 +43,7 @@ namespace Penguin
     private:
         Penguin::Semaphore  itemCount_;
         std::list<T>        queue_;
+        Penguin::Monitor    queueAccessMonitor_;
     };
 
 
@@ -90,6 +91,8 @@ namespace Penguin
     T
     Unbounded_Queue<T>::pop(void)
     {
+        // Important that we guard here to prevent races with two calls to look at the front then pop from the front of the list
+        Penguin::Monitor::_guard_type guard(this->queueAccessMonitor_);
         this->itemCount_.acquire();
         T value = this->queue_.front();
         this->queue_.pop_front();
@@ -104,6 +107,8 @@ namespace Penguin
     {
         if (std::cv_status::no_timeout == this->itemCount_.try_acquire_for(rel_time))
         {
+            // Important that we guard here to prevent races with two calls to look at the front then pop from the front of the list
+            Penguin::Monitor::_guard_type guard(this->queueAccessMonitor_);
             T value = this->queue_.front();
             this->queue_.pop_front();
             return value;
@@ -119,6 +124,8 @@ namespace Penguin
     {
         if (std::cv_status::no_timeout == this->itemCount_.try_acquire_until(timeout_time))
         {
+            // Important that we guard here to prevent races with two calls to look at the front then pop from the front of the list
+            Penguin::Monitor::_guard_type guard(this->queueAccessMonitor_);
             T value = this->queue_.front();
             this->queue_.pop_front();
             return value;

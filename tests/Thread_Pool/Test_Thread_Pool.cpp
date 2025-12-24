@@ -21,27 +21,29 @@ namespace
     public:
         Test_Task_Simple(uint32_t task_id)
             : Thread_Pool_Task()
-            , outStream_(std::cout)
             , taskID_(task_id)
         {
-            Penguin::stream_out(this->outStream_, "Test_Task_Simple(", this->taskID_, ")::<ctor> - ", std::this_thread::get_id(), '\n');
         }
 
         virtual ~Test_Task_Simple(void)
         {
-            // std::cout << "Test_Task_Simple::<dtor> - " << std::this_thread::get_id() << "\n";
         }
 
         int run(void) override
         {
-            Penguin::stream_out(this->outStream_, "Test_Task_Simple(", std::to_string(this->taskID_), ")::run - ", std::this_thread::get_id(), '\n');
+            std::osyncstream(std::cout) << "Test_Task_Simple(" << std::to_string(this->taskID_) << ")::run - " << std::this_thread::get_id() << '\n';
             return 0;
         }
 
     private:
-        std::osyncstream outStream_;
         uint32_t taskID_;
     };
+
+
+    void print_test_start(std::string test_name_text)
+    {
+        std::osyncstream(std::cout) << "Starting..." << test_name_text.c_str() << '\n';
+    }
 
 
     void print_test_result(bool result, std::string test_text)
@@ -52,16 +54,19 @@ namespace
 
     int simple_execute_move(void)
     {
-        Penguin::Thread_Pool pool(4);
+        uint32_t pool_thread_count = 4;
+        uint32_t task_thread_count = 20;
 
-        for (uint32_t n = 0; n < 20; n++)
+        Penguin::Thread_Pool pool(pool_thread_count);
+
+        for (uint32_t n = 0; n < task_thread_count; n++)
         {
             std::shared_ptr<Test_Task_Simple> task = std::make_shared<Test_Task_Simple>(n);
             pool.execute(std::move(task));
         }
 
         // Wait for a bit so the thread pool isn't destroyed while tasks are running, ending them prematurely
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
         return 0;
     }
@@ -69,19 +74,36 @@ namespace
 
     int simple_execute_reference(void)
     {
-        Penguin::Thread_Pool pool(4);
+        uint32_t pool_thread_count = 5;
+        uint32_t task_thread_count = 40;
 
-        for (uint32_t n = 0; n < 20; n++)
+        Penguin::Thread_Pool pool(pool_thread_count);
+
+        for (uint32_t n = 0; n < task_thread_count; n++)
         {
             std::shared_ptr<Test_Task_Simple> task = std::make_shared<Test_Task_Simple>(n);
             pool.execute(task);
         }
 
+        // Wait for a bit so the thread pool isn't destroyed while tasks are running, ending them prematurely
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+        return 0;
+    }
+
+
+    int simple_execute_reference_two(void)
+    {
+        uint32_t pool_thread_count = 5;
+        uint32_t task_thread_count = 40;
+
+        Penguin::Thread_Pool pool(pool_thread_count);
+
         // This time create all the tasks up front
         std::vector<std::shared_ptr<Test_Task_Simple>> task_vector;
-        for (uint32_t n = 0; n < 20; n++)
+        for (uint32_t n = 0; n < task_thread_count; n++)
         {
-            task_vector.emplace_back(new Test_Task_Simple(n));
+            task_vector.emplace_back(std::make_shared<Test_Task_Simple>(n));
         }
         for (auto& task : task_vector)
         {
@@ -89,7 +111,7 @@ namespace
         }
 
         // Wait for a bit so the thread pool isn't destroyed while tasks are running, ending them prematurely
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
         return 0;
     }
@@ -97,8 +119,10 @@ namespace
 
     bool test_simple_execute_move(void)
     {
+        print_test_start("test_simple_execute_move()");
+
         bool successful_result = false;
-        long long test_timeout_seconds = 10;
+        long long test_timeout_seconds = 20;
 
         std::future<int> result = std::async(std::launch::async, simple_execute_move);
         std::future_status result_status = result.wait_for(std::chrono::seconds(test_timeout_seconds));
@@ -113,8 +137,10 @@ namespace
 
     bool test_simple_execute_reference(void)
     {
+        print_test_start("test_simple_execute_reference()");
+
         bool successful_result = false;
-        long long test_timeout_seconds = 10;
+        long long test_timeout_seconds = 20;
        
         std::future<int> result = std::async(std::launch::async, simple_execute_reference);
         std::future_status result_status = result.wait_for(std::chrono::seconds(test_timeout_seconds));
@@ -125,6 +151,24 @@ namespace
         print_test_result(successful_result, "test_simple_execute_reference()");
         return successful_result;
     }
+
+
+    bool test_simple_execute_reference_two(void)
+    {
+        print_test_start("test_simple_execute_reference_two()");
+
+        bool successful_result = false;
+        long long test_timeout_seconds = 20;
+
+        std::future<int> result = std::async(std::launch::async, simple_execute_reference_two);
+        std::future_status result_status = result.wait_for(std::chrono::seconds(test_timeout_seconds));
+        if (result_status == std::future_status::ready)
+        {
+            successful_result = true;
+        }
+        print_test_result(successful_result, "test_simple_execute_reference_two()");
+        return successful_result;
+    }
 }
 
 
@@ -132,8 +176,10 @@ int main(int argc, char *argv[])
 {
     std::osyncstream(std::cout) << "Test_Thread_Pool" << '\n';
     bool pass = true;
-    pass &= test_simple_execute_reference();
     pass &= test_simple_execute_move();
+    pass &= test_simple_execute_reference();
+    pass &= test_simple_execute_reference_two();
+    
 
     return (pass ? 0 : -1);
 }
