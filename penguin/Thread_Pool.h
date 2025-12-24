@@ -22,7 +22,7 @@ namespace Penguin
 
         static constexpr std::chrono::milliseconds RETRIEVAL_TIMEOUT = std::chrono::milliseconds(5000);
 
-        explicit Thread_Pool(const uint32_t initial_thread_count);
+        explicit Thread_Pool(const uint32_t pool_thread_count);
         virtual ~Thread_Pool(void);
 
         virtual int execute(const std::shared_ptr<Thread_Pool_Task>& task);
@@ -31,6 +31,7 @@ namespace Penguin
 
     protected:
         static int thread_function(std::stop_token stop_token, Thread_Pool* pool_ptr);
+
 
     private:
         // Not copyable

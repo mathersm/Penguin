@@ -3,11 +3,12 @@
 */
 #include "Thread_Pool.h"
 
+
 namespace Penguin
 {
-	Thread_Pool::Thread_Pool(uint32_t initial_thread_count)
+	Thread_Pool::Thread_Pool(uint32_t pool_thread_count)
 		: shutdown_(false)
-		, threads_(initial_thread_count)
+		, threads_(pool_thread_count)
 	{
 		for (auto& thread : this->threads_)
 		{
@@ -23,7 +24,9 @@ namespace Penguin
 		for (auto& thread : this->threads_)
 		{
 			thread.request_stop();
-			thread.join();
+
+			// Since we are using jthreads we could adopt an approach of letting them all join on destruction
+			// thread.join();
 		}
 	}
 
@@ -51,12 +54,14 @@ namespace Penguin
 		{
 			// Don't block forever, poll the queue allowing space for interrupts and stop requests
 			std::optional<std::shared_ptr<Penguin::Thread_Pool_Task>> task = pool_ptr->taskQueue_.try_pop_for(Thread_Pool::RETRIEVAL_TIMEOUT);
-			if (task.has_value())
+			if (!pool_ptr->shutdown_ && task.has_value())
 			{
 				/// TO-DO Add in a mechanism to allow a callback on interruption
 				// std::stop_callback callback(stop_token, [task] {task.value().interrupt(); });
 				
+				/// TO-DO Should be checking a return value here
 				task.value()->run();
+				
 				// Don't return here, allow the thread to pick up the next task from the queue
 			}
 		}
